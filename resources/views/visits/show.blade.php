@@ -123,17 +123,12 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-200 gap-3">
             <div>
                 <h3 class="text-xs font-semibold text-gray-900 uppercase tracking-wider">Dokumentasi & Bukti Foto Lapangan</h3>
-        @include('visits.partials.upload-form')
                 <p class="text-xs text-gray-500 mt-0.5">Unggah foto kondisi tempat usaha, display produk, atau berkas pendukung</p>
             </div>
             <span class="text-xs text-gray-400 font-mono">{{ $visit->documents->count() }} Berkas</span>
         </div>
 
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
+        @include('visits.partials.upload-form')
     </div>
 
 </div>
