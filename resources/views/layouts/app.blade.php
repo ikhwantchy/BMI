@@ -18,7 +18,8 @@
 <body class="h-full bg-gray-50 text-gray-900 antialiased" style="font-family:'Plus Jakarta Sans',sans-serif">
 
 <div class="flex h-full" x-data="{
-    sidebarOpen: false,
+    sidebarOpen: true,
+    profileModal: false,
     openCategories: {
         operasional: {{ request()->routeIs('members.*', 'businesses.*', 'visits.*', 'evaluations.*', 'coaching.*') ? 'true' : 'false' }},
         pelaporan: {{ request()->routeIs('reports.*') ? 'true' : 'false' }},
@@ -39,39 +40,31 @@
          class="fixed inset-0 z-20 bg-black/40 lg:hidden"></div>
 
     {{-- ── Sidebar ──────────────────────────────────────────────────────────── --}}
-    <aside class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-[#008f45] border-r border-[#007437] shadow-lg
-                  transform transition-transform duration-200 ease-in-out
-                  lg:relative lg:translate-x-0"
-           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+    <aside x-show="sidebarOpen"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="-translate-x-full"
+           x-transition:enter-end="translate-x-0"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="translate-x-0"
+           x-transition:leave-end="-translate-x-full"
+           class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-[#008f45] border-r border-[#007437] shadow-lg lg:relative shrink-0">
 
         {{-- Logo Brand --}}
         <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
             <a href="{{ route('home') }}" class="flex items-center gap-3 transition-opacity hover:opacity-90" title="Koperasi Syariah BMI">
                 <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo Koperasi Syariah BMI" class="h-9 w-auto object-contain">
             </a>
-            <span class="inline-flex lg:hidden">
-                <button @click="sidebarOpen = false" class="text-white/80 hover:text-white p-1">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </span>
-        </div>
-
-        {{-- User info card --}}
-        <div class="mx-3.5 my-3 p-3 bg-white/10 rounded-xl border border-white/10 flex items-center justify-between shadow-xs">
-            <div class="min-w-0 pr-2">
-                <p class="text-white text-xs font-bold truncate leading-tight">{{ auth()->user()->name }}</p>
-                <p class="text-emerald-100 text-[11px] truncate mt-0.5">{{ auth()->user()->roleLabel() }}</p>
-            </div>
-            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/20 text-[10px] font-semibold text-emerald-200 shrink-0">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#e4c85b] animate-pulse"></span>
-                <span>Aktif</span>
-            </div>
+            <button @click="sidebarOpen = false"
+                    class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+                    title="Tutup sidebar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                </svg>
+            </button>
         </div>
 
         {{-- Navigation --}}
-        <nav class="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto">
+        <nav class="flex-1 px-3 py-3 space-y-1.5 overflow-y-auto">
             @php
                 $userRole = auth()->user()->role;
 
@@ -188,46 +181,36 @@
                 @endphp
                 @if(count($visibleItems) > 0)
                     <div class="space-y-1">
-                        {{-- Category Toggle Button --}}
+                        {{-- Category Toggle Button (No icon on category header, clean text + chevron) --}}
                         <button type="button"
                                 @click="openCategories.{{ $groupKey }} = !openCategories.{{ $groupKey }}"
-                                style="color: #ffffff !important;"
-                                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer text-white
-                                       {{ $isGroupActive
-                                           ? 'bg-white/20 font-semibold'
-                                           : 'hover:bg-white/10' }}">
-                            <div class="flex items-center gap-3 text-white" style="color: #ffffff !important;">
-                                <svg class="w-4 h-4 shrink-0 text-white" style="color: #ffffff !important;" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                                    {!! $group['icon'] !!}
-                                </svg>
-                                <span class="text-white" style="color: #ffffff !important;">{{ $group['label'] }}</span>
-                            </div>
-                            <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 text-white"
-                                 style="color: #ffffff !important;"
-                                 :class="openCategories.{{ $groupKey }} ? 'rotate-180' : ''"
-                                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer text-white
+                                       {{ $isGroupActive ? 'bg-white/20 shadow-xs' : 'hover:bg-white/10' }}">
+                            <span class="text-white text-xs font-semibold tracking-wide">{{ $group['label'] }}</span>
+                            <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 text-white/80"
+                                 :class="openCategories.{{ $groupKey }} ? 'rotate-90' : ''"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                             </svg>
                         </button>
 
-                        {{-- Submenu Items (Indented with vertical connecting guide) --}}
+                        {{-- Submenu Items (With icon and indented guide line) --}}
                         <div x-show="openCategories.{{ $groupKey }}"
                              x-transition:enter="transition ease-out duration-150"
                              x-transition:enter-start="opacity-0 -translate-y-1"
                              x-transition:enter-end="opacity-100 translate-y-0"
-                             class="mt-1 ml-5 pl-3 border-l border-white/25 space-y-1">
+                             class="mt-1 ml-4 pl-3.5 border-l-2 border-white/20 space-y-1">
                             @foreach($visibleItems as $item)
                                 @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
                                 <a href="{{ route($item['route']) }}"
-                                   style="color: #ffffff !important;"
-                                   class="flex items-center gap-2.5 px-3 py-1.5 text-xs rounded-lg transition-all text-white
+                                   class="flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg transition-all text-white
                                           {{ $isItemActive
-                                              ? 'bg-white/25 font-bold shadow-sm'
-                                              : 'hover:bg-white/15' }}">
-                                    <svg class="w-3.5 h-3.5 shrink-0 text-white" style="color: #ffffff !important;" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                              ? 'bg-white/25 font-bold shadow-xs'
+                                              : 'hover:bg-white/10 text-white/90' }}">
+                                    <svg class="w-4 h-4 shrink-0 text-white" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                         {!! $item['icon'] !!}
                                     </svg>
-                                    <span class="text-white" style="color: #ffffff !important;">{{ $item['label'] }}</span>
+                                    <span class="text-white text-xs {{ $isItemActive ? 'font-bold' : 'font-medium' }}">{{ $item['label'] }}</span>
                                 </a>
                             @endforeach
                         </div>
@@ -236,19 +219,20 @@
             @endforeach
         </nav>
 
-        {{-- Logout --}}
-        <div class="p-2 border-t border-[#00803f]">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit"
-                        style="color: #ffffff !important;"
-                        class="flex items-center gap-3 w-full px-3 py-2 text-xs font-medium text-white hover:bg-white/10 rounded-xl transition-colors">
-                    <svg class="w-4 h-4 shrink-0 text-white" style="color: #ffffff !important;" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        {{-- Collapse Sidebar (Full Screen Mode) --}}
+        <div class="p-3 border-t border-white/10">
+            <button type="button"
+                    @click="sidebarOpen = false"
+                    class="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all cursor-pointer"
+                    title="Tutup sidebar untuk mode layar penuh">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 shrink-0 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
                     </svg>
-                    <span class="text-white" style="color: #ffffff !important;">Keluar</span>
-                </button>
-            </form>
+                    <span>Layar Penuh</span>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-black/20 rounded-md text-emerald-200 font-bold">Tutup</span>
+            </button>
         </div>
     </aside>
 
@@ -259,7 +243,8 @@
         <header class="flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-200 shrink-0 shadow-xs">
             <div class="flex items-center gap-3">
                 <button @click="sidebarOpen = !sidebarOpen"
-                        class="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                        class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+                        :title="sidebarOpen ? 'Tutup sidebar (Layar Penuh)' : 'Buka sidebar'">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
@@ -302,11 +287,74 @@
                     </a>
                 @endif
 
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#e4c85b]/60 bg-[#fefce8] text-[#9c7c10] font-semibold text-xs">
+                <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#e4c85b]/60 bg-[#fefce8] text-[#9c7c10] font-semibold text-xs">
                     <span class="w-1.5 h-1.5 rounded-full bg-[#e4c85b]"></span>
                     BMI Syariah
                 </span>
-                <span class="hidden md:inline text-gray-400 font-medium text-xs">{{ now()->translatedFormat('l, d F Y') }}</span>
+
+                {{-- User Profile Pill & Dropdown (Top Right) --}}
+                <div class="relative ml-2" x-data="{ profileDropdown: false }" @click.outside="profileDropdown = false">
+                    <button type="button"
+                            @click="profileDropdown = !profileDropdown"
+                            class="flex items-center gap-2.5 p-1 pl-3 rounded-full hover:bg-gray-100 border border-gray-200 transition-colors cursor-pointer">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-xs font-bold text-gray-900 leading-tight">{{ auth()->user()->name }}</p>
+                            <p class="text-[10px] text-gray-500 font-semibold leading-tight mt-0.5">{{ auth()->user()->roleLabel() }}</p>
+                        </div>
+                        {{-- Profile Icon Button matching reference --}}
+                        <div class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center shrink-0 transition-colors">
+                            <svg class="w-4 h-4 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                    </button>
+
+                    {{-- Dropdown Menu matching user image 3 --}}
+                    <div x-show="profileDropdown"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-64 rounded-2xl bg-white shadow-xl ring-1 ring-black/5 z-50 divide-y divide-gray-100 overflow-hidden"
+                         style="display: none;">
+                        {{-- User Header with Email & Role --}}
+                        <div class="px-4 py-3 bg-gray-50/70">
+                            <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                            <p class="text-[11px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
+                            <span class="inline-block mt-2 px-2.5 py-0.5 text-[10px] font-bold uppercase font-mono tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
+                                {{ auth()->user()->roleLabel() }}
+                            </span>
+                        </div>
+
+                        {{-- Action: Lihat Profile --}}
+                        <div class="py-1">
+                            <button type="button"
+                                    @click="profileDropdown = false; profileModal = true"
+                                    class="flex items-center gap-3 w-full px-4 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <span>Lihat Profil</span>
+                            </button>
+                        </div>
+
+                        {{-- Action: Logout --}}
+                        <div class="py-1">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit"
+                                        class="flex items-center gap-3 w-full px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer">
+                                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                    </svg>
+                                    <span>Keluar (Log out)</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -336,6 +384,77 @@
         <main class="flex-1 overflow-y-auto bg-gray-50 px-6 py-6">
             @yield('content')
         </main>
+    </div>
+
+    {{-- Modal Lihat Profile --}}
+    <div x-show="profileModal"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto"
+         style="display: none;">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="fixed inset-0 bg-black/40 backdrop-blur-xs" @click="profileModal = false"></div>
+            <div class="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-gray-100 space-y-5">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-[#009a4c] flex items-center justify-center font-bold text-base border border-emerald-200/60">
+                            {{ substr(auth()->user()->name, 0, 1) }}
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Profil Pengguna</h3>
+                            <p class="text-[11px] text-gray-500">Informasi akun Anda di Kopsyah BMI</p>
+                        </div>
+                    </div>
+                    <button @click="profileModal = false" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div class="bg-gray-50 rounded-2xl p-4 space-y-2.5 border border-gray-100">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 font-medium">Nama Lengkap</span>
+                            <span class="font-bold text-gray-900">{{ auth()->user()->name }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 font-medium">Username</span>
+                            <span class="font-mono text-gray-700 font-semibold">{{ '@' . auth()->user()->username }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 font-medium">Email</span>
+                            <span class="font-mono text-gray-700">{{ auth()->user()->email }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 font-medium">Peran / Role</span>
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase font-mono tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
+                                {{ auth()->user()->roleLabel() }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 font-medium">Cabang Tugas</span>
+                            <span class="font-medium text-gray-800">{{ auth()->user()->branch?->name ?? 'Pusat / Lintas Cabang' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 font-medium">Status Akun</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end">
+                    <button type="button" @click="profileModal = false"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-colors">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
