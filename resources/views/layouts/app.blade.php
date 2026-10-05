@@ -45,8 +45,8 @@
            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
         {{-- Logo Brand --}}
-        <a href="{{ route('home') }}" class="flex items-center justify-center px-4 py-4 border-b border-[#00803f] hover:bg-[#00803f]/50 transition-colors" title="Lihat Landing Page">
-            <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo BMI" class="h-9 max-w-[195px] w-auto object-contain">
+        <a href="{{ route('home') }}" class="flex items-center justify-start pl-3.5 pr-2 py-4 border-b border-[#00803f] hover:bg-[#00803f]/50 transition-colors" title="Lihat Landing Page">
+            <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo BMI" class="h-11 w-auto max-w-[225px] object-contain object-left">
         </a>
 
         {{-- User info --}}
@@ -173,14 +173,15 @@
 
             {{-- Standalone Dashboard Item --}}
             <a href="{{ route('dashboard') }}"
-               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all
+               style="color: #ffffff !important;"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-white
                       {{ $isDashboardActive
-                          ? 'bg-white/20 text-white font-semibold shadow-sm'
-                          : 'text-white/85 hover:text-white hover:bg-white/10' }}">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                          ? 'bg-white/20 font-semibold shadow-sm'
+                          : 'hover:bg-white/10' }}">
+                <svg class="w-4 h-4 shrink-0 text-white" style="color: #ffffff !important;" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                 </svg>
-                <span>Dashboard</span>
+                <span class="text-white" style="color: #ffffff !important;">Dashboard</span>
             </a>
 
             {{-- Accordion Categories --}}
@@ -194,17 +195,19 @@
                         {{-- Category Toggle Button --}}
                         <button type="button"
                                 @click="openCategories.{{ $groupKey }} = !openCategories.{{ $groupKey }}"
-                                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer
+                                style="color: #ffffff !important;"
+                                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer text-white
                                        {{ $isGroupActive
-                                           ? 'bg-white/15 text-white font-semibold'
-                                           : 'text-white/85 hover:text-white hover:bg-white/10' }}">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                           ? 'bg-white/20 font-semibold'
+                                           : 'hover:bg-white/10' }}">
+                            <div class="flex items-center gap-3 text-white" style="color: #ffffff !important;">
+                                <svg class="w-4 h-4 shrink-0 text-white" style="color: #ffffff !important;" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                     {!! $group['icon'] !!}
                                 </svg>
-                                <span>{{ $group['label'] }}</span>
+                                <span class="text-white" style="color: #ffffff !important;">{{ $group['label'] }}</span>
                             </div>
-                            <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 text-white/70"
+                            <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 text-white"
+                                 style="color: #ffffff !important;"
                                  :class="openCategories.{{ $groupKey }} ? 'rotate-180' : ''"
                                  fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
@@ -216,18 +219,19 @@
                              x-transition:enter="transition ease-out duration-150"
                              x-transition:enter-start="opacity-0 -translate-y-1"
                              x-transition:enter-end="opacity-100 translate-y-0"
-                             class="mt-1 ml-5 pl-3 border-l border-white/20 space-y-1">
+                             class="mt-1 ml-5 pl-3 border-l border-white/25 space-y-1">
                             @foreach($visibleItems as $item)
                                 @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
                                 <a href="{{ route($item['route']) }}"
-                                   class="flex items-center gap-2.5 px-3 py-1.5 text-xs rounded-lg transition-all
+                                   style="color: #ffffff !important;"
+                                   class="flex items-center gap-2.5 px-3 py-1.5 text-xs rounded-lg transition-all text-white
                                           {{ $isItemActive
-                                              ? 'bg-white/20 text-white font-semibold shadow-sm'
-                                              : 'text-white/75 hover:text-white hover:bg-white/10' }}">
-                                    <svg class="w-3.5 h-3.5 shrink-0 opacity-80" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                              ? 'bg-white/25 font-bold shadow-sm'
+                                              : 'hover:bg-white/15' }}">
+                                    <svg class="w-3.5 h-3.5 shrink-0 text-white" style="color: #ffffff !important;" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                         {!! $item['icon'] !!}
                                     </svg>
-                                    <span>{{ $item['label'] }}</span>
+                                    <span class="text-white" style="color: #ffffff !important;">{{ $item['label'] }}</span>
                                 </a>
                             @endforeach
                         </div>
@@ -236,18 +240,17 @@
             @endforeach
         </nav>
 
-
-
         {{-- Logout --}}
         <div class="p-2 border-t border-[#00803f]">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
-                        class="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-[#00803f] transition-colors">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                        style="color: #ffffff !important;"
+                        class="flex items-center gap-3 w-full px-3 py-2 text-xs font-medium text-white hover:bg-white/10 rounded-xl transition-colors">
+                    <svg class="w-4 h-4 shrink-0 text-white" style="color: #ffffff !important;" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                     </svg>
-                    Keluar
+                    <span class="text-white" style="color: #ffffff !important;">Keluar</span>
                 </button>
             </form>
         </div>
