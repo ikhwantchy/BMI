@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Jadwal & Kunjungan Lapangan')
-@section('page-title', 'Kunjungan Lapangan')
+@section('title', auth()->user()->hasRole('petugas_lapangan') ? 'Tugas Kunjungan' : 'Jadwal & Kunjungan Lapangan')
+@section('page-title', auth()->user()->hasRole('petugas_lapangan') ? 'Tugas Kunjungan' : 'Kunjungan Lapangan')
 
 @section('content')
 <div class="py-4 space-y-4">
@@ -16,8 +16,9 @@
             <div class="flex items-center gap-2">
                 <select name="status" class="input-base flex-1 sm:w-auto">
                     <option value="">-- Semua Status --</option>
-                    <option value="scheduled" {{ request('status') === 'scheduled' ? 'selected' : '' }}>Dijadwalkan</option>
-                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Selesai</option>
+                    <option value="scheduled" {{ request('status') === 'scheduled' ? 'selected' : '' }}>Ditugaskan</option>
+                    <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>Sedang Dikerjakan</option>
+                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Selesai / Menunggu Validasi</option>
                     <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
                 </select>
                 <button type="submit" class="btn-secondary">
@@ -31,12 +32,14 @@
             </div>
         </form>
 
+        @can('create', App\Models\Visit::class)
         <a href="{{ route('visits.create') }}" class="btn-primary w-full sm:w-auto justify-center shrink-0 drawer-link">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
             </svg>
             Jadwalkan Kunjungan
         </a>
+        @endcan
     </div>
 
     {{-- Visits Table & Mobile Cards --}}

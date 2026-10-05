@@ -34,8 +34,11 @@ class VisitController extends Controller
 
         $businesses = Business::with('member')->active()->orderBy('name')->get();
         $selectedBusiness = $request->business_id ? Business::with('member')->find($request->business_id) : null;
+        
+        // Ambil daftar petugas lapangan untuk dipilih oleh manajer
+        $officers = \App\Models\User::role('petugas_lapangan')->get();
 
-        return view('visits.create', compact('businesses', 'selectedBusiness'));
+        return view('visits.create', compact('businesses', 'selectedBusiness', 'officers'));
     }
 
     public function store(Request $request)
@@ -44,19 +47,19 @@ class VisitController extends Controller
 
         $validated = $request->validate([
             'business_id'       => ['required', 'exists:businesses,id'],
+            'officer_id'        => ['required', 'exists:users,id'],
             'visit_date'        => ['required', 'date'],
             'evaluation_period' => ['required', 'string', 'regex:/^\d{4}-\d{2}$/'],
             'field_notes'       => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $validated['officer_id'] = $request->user()->id;
         $validated['status']     = VisitStatus::Scheduled->value;
 
         $visit = Visit::create($validated);
         $this->auditService->logCreate($visit);
 
         return redirect()->route('visits.show', $visit)
-            ->with('success', 'Jadwal kunjungan berhasil dibuat.');
+            ->with('success', 'Jadwal kunjungan berhasil dibuat dan ditugaskan.');
     }
 
     public function show(Visit $visit)
@@ -64,8 +67,9 @@ class VisitController extends Controller
         $this->authorize('view', $visit);
 
         $visit->load(['business.member', 'officer', 'documents', 'evaluation.details.parameter']);
+        $parameters = \App\Models\EvaluationParameter::active()->get();
 
-        return view('visits.show', compact('visit'));
+        return view('visits.show', compact('visit', 'parameters'));
     }
 
     public function edit(Visit $visit)
@@ -95,6 +99,49 @@ class VisitController extends Controller
 
         return redirect()->route('visits.show', $visit)
             ->with('success', 'Data kunjungan berhasil diperbarui.');
+    }
+
+    public function submitExecution(Request $request, Visit $visit)
+    {
+        $this->authorize("update", $visit);
+        $request->validate([
+            "field_notes" => "nullable|string|max:2000",
+            "scores" => "required|array",
+            "scores.*" => "required|numeric|min:0|max:100",
+            "notes.*" => "nullable|string|max:500",
+            "recommendation" => "required|string|in:recommended,continued_coaching,not_recommended",
+            "recommendation_reason" => "nullable|string",
+        ]);
+
+        DB::transaction(function () use ($request, $visit) {
+            $visit->update([
+                "field_notes" => $request->field_notes,
+                "status" => \App\Enums\VisitStatus::Completed->value,
+            ]);
+
+            $evaluation = $visit->evaluation()->firstOrCreate([
+                "business_id" => $visit->business_id,
+                "branch_id" => auth()->user()->branch_id ?? 1,
+            ]);
+
+            $evaluation->update([
+                "status" => \App\Enums\EvaluationStatus::WaitingValidation->value,
+                "recommendation" => $request->recommendation,
+                "recommendation_reason" => $request->recommendation_reason,
+                "submitted_by" => auth()->id(),
+                "submitted_at" => now(),
+            ]);
+
+            foreach ($request->scores as $parameterId => $score) {
+                \App\Models\EvaluationDetail::updateOrCreate(
+                    ["evaluation_id" => $evaluation->id, "parameter_id" => $parameterId],
+                    ["score" => $score, "notes" => $request->notes[$parameterId] ?? null]
+                );
+            }
+            app(\App\Services\ScoringService::class)->applyScore($evaluation);
+        });
+
+        return redirect()->route("visits.show", $visit)->with("success", "Kunjungan berhasil diselesaikan dan menunggu validasi.");
     }
 
     public function complete(Request $request, Visit $visit)

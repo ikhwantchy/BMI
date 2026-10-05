@@ -4,6 +4,11 @@
 @section('page-title', 'Detail Kunjungan Lapangan')
 
 @section('content')
+
+@if(auth()->user()->hasRole('petugas_lapangan') && in_array($visit->status->value, ['scheduled', 'in_progress']))
+    @include('visits.execute-form')
+@else
+
 <div class="py-4 space-y-6">
 
     {{-- Breadcrumb & Actions --}}
@@ -310,3 +315,4 @@
 
 </div>
 @endsection
+@endif

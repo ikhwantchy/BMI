@@ -42,6 +42,27 @@
                 @enderror
             </div>
 
+            {{-- Pilih Petugas Lapangan --}}
+            <div>
+                <label for="officer_id" class="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                    Petugas Lapangan <span class="text-red-500">*</span>
+                </label>
+                <select name="officer_id"
+                        id="officer_id"
+                        required
+                        class="input-base @error('officer_id') border-red-500 bg-red-50 @enderror">
+                    <option value="">-- Pilih Petugas yang Ditugaskan --</option>
+                    @foreach($officers as $officer)
+                        <option value="{{ $officer->id }}" {{ old('officer_id') == $officer->id ? 'selected' : '' }}>
+                            {{ $officer->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('officer_id')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
             {{-- Tanggal Kunjungan & Periode Evaluasi --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

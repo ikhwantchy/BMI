@@ -27,7 +27,7 @@ class VisitPolicy
 
     public function create(User $user): bool
     {
-        return $this->checkPermission($user, 'visits.create', ['petugas_lapangan', 'system_admin']);
+        return $this->checkPermission($user, 'visits.create', ['manajer', 'asisten_manajer', 'pengurus', 'system_admin']);
     }
 
     public function update(User $user, Visit $visit): bool

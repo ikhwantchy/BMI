@@ -12,9 +12,9 @@ enum VisitStatus: string
     public function label(): string
     {
         return match($this) {
-            self::Scheduled  => 'Terjadwal',
-            self::InProgress => 'Berlangsung',
-            self::Completed  => 'Selesai',
+            self::Scheduled  => 'Ditugaskan',
+            self::InProgress => 'Sedang Dikerjakan',
+            self::Completed  => 'Selesai / Menunggu Validasi',
             self::Cancelled  => 'Dibatalkan',
         };
     }
