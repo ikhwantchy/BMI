@@ -71,4 +71,35 @@ Route::middleware('auth')->group(function () {
     // Audit Trail & Keamanan
     Route::get('/audit', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit.index');
     Route::get('/audit/export', [\App\Http\Controllers\AuditLogController::class, 'export'])->name('audit.export');
+
+    // Manajemen Pengguna
+    Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show', 'destroy']);
+    Route::patch('/users/{user}/toggle', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle');
+
+    // Manajemen Cabang
+    Route::get('/branches', [\App\Http\Controllers\BranchController::class, 'index'])->name('branches.index');
+    Route::post('/branches', [\App\Http\Controllers\BranchController::class, 'store'])->name('branches.store');
+    Route::put('/branches/{branch}', [\App\Http\Controllers\BranchController::class, 'update'])->name('branches.update');
 });
+
+// ─── Health Check Monitoring ─────────────────────────────────────────────────
+Route::get('/health', function () {
+    $dbOk = false;
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbOk = true;
+    } catch (\Throwable $e) {}
+
+    $storageOk = is_writable(storage_path());
+
+    $status = ($dbOk && $storageOk) ? 200 : 503;
+
+    return response()->json([
+        'status'    => ($dbOk && $storageOk) ? 'healthy' : 'degraded',
+        'timestamp' => now()->toIso8601String(),
+        'checks'    => [
+            'database' => $dbOk ? 'connected' : 'unreachable',
+            'storage'  => $storageOk ? 'writable' : 'read-only',
+        ],
+    ], $status);
+})->name('health');

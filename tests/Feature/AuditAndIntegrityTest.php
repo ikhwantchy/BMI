@@ -86,4 +86,28 @@ class AuditAndIntegrityTest extends TestCase
         $response->assertOk();
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
     }
+
+    public function test_health_check_endpoint_returns_healthy(): void
+    {
+        $response = $this->get('/health');
+        $response->assertOk();
+        $response->assertJson([
+            'status' => 'healthy',
+            'checks' => [
+                'database' => 'connected',
+                'storage'  => 'writable',
+            ],
+        ]);
+    }
+
+    public function test_user_and_branch_management_access_control(): void
+    {
+        // Officer denied
+        $this->actingAs($this->officer)->get(route('users.index'))->assertForbidden();
+        $this->actingAs($this->officer)->get(route('branches.index'))->assertForbidden();
+
+        // Manager allowed
+        $this->actingAs($this->manager)->get(route('users.index'))->assertOk();
+        $this->actingAs($this->manager)->get(route('branches.index'))->assertOk();
+    }
 }

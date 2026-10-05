@@ -107,6 +107,18 @@
                         'roles' => ['manajer','pengurus','pengawas','system_admin'],
                         'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>',
                     ],
+                    [
+                        'route' => 'users.index',
+                        'label' => 'Pengguna',
+                        'roles' => ['system_admin','manajer','pengurus'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>',
+                    ],
+                    [
+                        'route' => 'branches.index',
+                        'label' => 'Cabang',
+                        'roles' => ['system_admin','pengurus','pengawas','manajer'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
+                    ],
                 ];
             @endphp
 
@@ -158,7 +170,40 @@
             <div>
                 <h1 class="text-sm font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
             </div>
+
+            {{-- Action Center / Notification Badges --}}
+            @php
+                $waitingValidationCount = 0;
+                $needsRevisionCount = 0;
+                try {
+                    if (auth()->user()->canValidate() || auth()->user()->hasAnyRole(['system_admin', 'pengurus'])) {
+                        $waitingValidationCount = \App\Models\Evaluation::waitingValidation()->count();
+                    }
+                    if (auth()->user()->isOfficer()) {
+                        $needsRevisionCount = \App\Models\Evaluation::where('status', \App\Enums\EvaluationStatus::NeedsRevision->value)->count();
+                    }
+                } catch (\Throwable $e) {}
+            @endphp
+
             <div class="ml-auto flex items-center gap-3 text-xs text-gray-500">
+                @if($waitingValidationCount > 0)
+                    <a href="{{ route('evaluations.index', ['status' => 'waiting_validation']) }}"
+                       class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-300 text-amber-800 font-semibold text-[11px] hover:bg-amber-100 transition-colors"
+                       title="{{ $waitingValidationCount }} Evaluasi menunggu validasi">
+                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                        <span>{{ $waitingValidationCount }} Perlu Validasi</span>
+                    </a>
+                @endif
+
+                @if($needsRevisionCount > 0)
+                    <a href="{{ route('evaluations.index', ['status' => 'needs_revision']) }}"
+                       class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 border border-orange-300 text-orange-800 font-semibold text-[11px] hover:bg-orange-100 transition-colors"
+                       title="{{ $needsRevisionCount }} Evaluasi perlu direvisi">
+                        <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                        <span>{{ $needsRevisionCount }} Perlu Revisi</span>
+                    </a>
+                @endif
+
                 <span class="inline-flex items-center gap-1.5 px-2 py-0.5 border border-[#e4c85b] bg-[#fefce8] text-[#9c7c10] font-medium text-[11px]">
                     <span class="w-1.5 h-1.5 bg-[#e4c85b]"></span>
                     BMI Syariah
