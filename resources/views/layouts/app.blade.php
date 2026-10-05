@@ -79,7 +79,7 @@
                             ],
                             [
                                 'route' => 'visits.index',
-                                'label' => 'Kunjungan',
+                                'label' => auth()->user()->hasRole('petugas_lapangan') ? 'Tugas Saya' : 'Kunjungan',
                                 'roles' => ['petugas_lapangan','asisten_manajer','manajer','pengurus','pengawas','system_admin'],
                             ],
                             [
