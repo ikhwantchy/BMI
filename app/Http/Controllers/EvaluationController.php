@@ -158,7 +158,7 @@ class EvaluationController extends Controller
             'validator_notes' => $request->validator_notes,
         ]);
 
-        $this->auditService->logReject($evaluation);
+        $this->auditService->logReject($evaluation, $request->validator_notes);
 
         return back()->with('success', 'Evaluasi ditolak.');
     }
@@ -179,10 +179,7 @@ class EvaluationController extends Controller
             'validator_notes' => $request->validator_notes,
         ]);
 
-        $this->auditService->log('revise', Evaluation::class, $evaluation->id, [], [
-            'validator_notes' => $request->validator_notes,
-            'status'          => EvaluationStatus::NeedsRevision->value,
-        ]);
+        $this->auditService->logRevise($evaluation, $request->validator_notes);
 
         return back()->with('success', 'Evaluasi dikembalikan ke petugas untuk direvisi.');
     }

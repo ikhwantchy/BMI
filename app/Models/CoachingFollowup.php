@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\ScopedByBranch;
 
 class CoachingFollowup extends Model
 {
-    use ScopedByBranch;
+    use ScopedByBranch, SoftDeletes;
     protected $fillable = [
         'evaluation_id',
         'recommendation_id',

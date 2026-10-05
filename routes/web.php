@@ -10,9 +10,9 @@ use App\Http\Controllers\CoachingController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
-// ─── Root Redirect ──────────────────────────────────────────────────────────────
+// ─── Root Landing Page ───────────────────────────────────────────────────────
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    return view('welcome');
 })->name('home');
 
 // ─── Guest Routes ─────────────────────────────────────────────────────────────
@@ -67,4 +67,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/evaluations', [ReportController::class, 'evaluations'])->name('reports.evaluations');
     Route::get('/reports/recommendations', [ReportController::class, 'recommendations'])->name('reports.recommendations');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+
+    // Audit Trail & Keamanan
+    Route::get('/audit', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit.index');
+    Route::get('/audit/export', [\App\Http\Controllers\AuditLogController::class, 'export'])->name('audit.export');
 });

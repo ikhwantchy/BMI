@@ -6,11 +6,12 @@ use App\Enums\CoachingStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\ScopedByBranch;
 
 class CoachingRecommendation extends Model
 {
-    use ScopedByBranch;
+    use ScopedByBranch, SoftDeletes;
     protected $fillable = [
         'evaluation_id',
         'category',

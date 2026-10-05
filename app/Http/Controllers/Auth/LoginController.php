@@ -48,6 +48,8 @@ class LoginController extends Controller
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::hit($key, 60);
 
+            $this->auditService->logFailedLogin($request->username, 'Username atau password salah');
+
             throw ValidationException::withMessages([
                 'username' => 'Username atau password salah.',
             ]);
@@ -63,6 +65,10 @@ class LoginController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        if ($userId = Auth::id()) {
+            $this->auditService->logLogout($userId);
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

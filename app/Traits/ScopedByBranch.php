@@ -10,11 +10,15 @@ trait ScopedByBranch
     protected static function bootScopedByBranch()
     {
         static::addGlobalScope('branch', function (Builder $builder) {
-            if (Auth::check() && Auth::user()->branch_id && !Auth::user()->hasRole('system_admin')) {
-                // For tables that have branch_id, restrict it.
-                // If it's a join or something, we should specify the table name.
+            if (Auth::check() && Auth::user()->branch_id && !Auth::user()->hasAnyRole(['system_admin', 'pengurus', 'pengawas'])) {
                 $table = $builder->getModel()->getTable();
                 $builder->where($table . '.branch_id', Auth::user()->branch_id);
+            }
+        });
+
+        static::creating(function ($model) {
+            if (Auth::check() && Auth::user()->branch_id && empty($model->branch_id)) {
+                $model->branch_id = Auth::user()->branch_id;
             }
         });
     }

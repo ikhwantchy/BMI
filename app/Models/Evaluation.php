@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\ScopedByBranch;
 
 class Evaluation extends Model
 {
-    use HasFactory, ScopedByBranch;
+    use HasFactory, ScopedByBranch, SoftDeletes;
 
     protected $fillable = [
         'visit_id',

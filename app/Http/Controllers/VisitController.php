@@ -15,6 +15,8 @@ class VisitController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Visit::class);
+
         $visits = Visit::with(['business.member', 'officer'])
             ->when($request->user()->isOfficer(), fn($q) => $q->forOfficer($request->user()->id))
             ->when($request->status, fn($q, $s) => $q->where('status', $s))
@@ -28,6 +30,8 @@ class VisitController extends Controller
 
     public function create(Request $request)
     {
+        $this->authorize('create', Visit::class);
+
         $businesses = Business::with('member')->active()->orderBy('name')->get();
         $selectedBusiness = $request->business_id ? Business::with('member')->find($request->business_id) : null;
 
@@ -36,6 +40,8 @@ class VisitController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Visit::class);
+
         $validated = $request->validate([
             'business_id'       => ['required', 'exists:businesses,id'],
             'visit_date'        => ['required', 'date'],
@@ -55,6 +61,8 @@ class VisitController extends Controller
 
     public function show(Visit $visit)
     {
+        $this->authorize('view', $visit);
+
         $visit->load(['business.member', 'officer', 'documents', 'evaluation.details.parameter']);
 
         return view('visits.show', compact('visit'));
@@ -62,6 +70,8 @@ class VisitController extends Controller
 
     public function edit(Visit $visit)
     {
+        $this->authorize('update', $visit);
+
         $businesses = Business::with('member')->active()->orderBy('name')->get();
 
         return view('visits.edit', compact('visit', 'businesses'));
@@ -69,6 +79,8 @@ class VisitController extends Controller
 
     public function update(Request $request, Visit $visit)
     {
+        $this->authorize('update', $visit);
+
         abort_if($visit->status === VisitStatus::Completed, 403, 'Kunjungan yang sudah selesai tidak dapat diubah.');
 
         $validated = $request->validate([
@@ -87,6 +99,8 @@ class VisitController extends Controller
 
     public function complete(Request $request, Visit $visit)
     {
+        $this->authorize('update', $visit);
+
         abort_if($visit->status === VisitStatus::Completed, 403, 'Kunjungan sudah selesai.');
 
         $visit->update(['status' => VisitStatus::Completed]);
@@ -98,6 +112,8 @@ class VisitController extends Controller
 
     public function uploadDocument(Request $request, Visit $visit)
     {
+        $this->authorize('update', $visit);
+
         $request->validate([
             'document' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'], // Max 5MB
             'caption'  => ['nullable', 'string', 'max:255'],
@@ -122,6 +138,8 @@ class VisitController extends Controller
 
     public function deleteDocument(Visit $visit, \App\Models\VisitDocument $document)
     {
+        $this->authorize('update', $visit);
+
         \Illuminate\Support\Facades\Storage::disk('public')->delete($document->file_path);
         $document->delete();
 

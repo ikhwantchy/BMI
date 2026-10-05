@@ -20,6 +20,8 @@ class CoachingController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', CoachingRecommendation::class);
+
         $recommendations = CoachingRecommendation::with([
                 'evaluation.business.member',
                 'createdBy',
@@ -42,6 +44,8 @@ class CoachingController extends Controller
      */
     public function show(CoachingRecommendation $coaching)
     {
+        $this->authorize('view', $coaching);
+
         $coaching->load([
             'evaluation.business.member',
             'evaluation.visit',
@@ -58,6 +62,8 @@ class CoachingController extends Controller
      */
     public function create(Request $request)
     {
+        $this->authorize('create', CoachingRecommendation::class);
+
         $evaluation = Evaluation::with('business.member')->findOrFail($request->evaluation_id);
 
         abort_unless($evaluation->isValidated(), 422, 'Rekomendasi hanya dapat ditambahkan pada evaluasi yang sudah tervalidasi.');
@@ -70,6 +76,8 @@ class CoachingController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', CoachingRecommendation::class);
+
         $validated = $request->validate([
             'evaluation_id' => ['required', 'exists:evaluations,id'],
             'category'      => ['required', 'string', 'max:100'],
@@ -93,6 +101,8 @@ class CoachingController extends Controller
      */
     public function edit(CoachingRecommendation $coaching)
     {
+        $this->authorize('update', $coaching);
+
         abort_if($coaching->status !== CoachingStatus::Pending, 403, 'Rekomendasi yang sudah berjalan tidak dapat diedit.');
 
         return view('coaching.edit', compact('coaching'));
@@ -103,6 +113,8 @@ class CoachingController extends Controller
      */
     public function update(Request $request, CoachingRecommendation $coaching)
     {
+        $this->authorize('update', $coaching);
+
         abort_if($coaching->status !== CoachingStatus::Pending, 403, 'Rekomendasi yang sudah berjalan tidak dapat diubah.');
 
         $validated = $request->validate([
@@ -126,6 +138,7 @@ class CoachingController extends Controller
      */
     public function addFollowup(Request $request, CoachingRecommendation $coaching)
     {
+        $this->authorize('update', $coaching);
         $validated = $request->validate([
             'followup_date' => ['required', 'date'],
             'activity'      => ['required', 'string', 'max:1000'],

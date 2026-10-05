@@ -22,6 +22,8 @@ class DemoDataSeeder extends Seeder
     {
         $officer = User::where('role', 'petugas_lapangan')->first();
         $manager = User::where('role', 'manajer')->first();
+        $branch  = \App\Models\Branch::first();
+        $branchId = $branch?->id ?? 1;
 
         // 1. Members
         $membersData = [
@@ -32,6 +34,7 @@ class DemoDataSeeder extends Seeder
                 'address'           => 'Jl. Raya Pasir Kaliki No. 45, Tangerang',
                 'notes'             => 'Anggota sejak Januari 2023, usaha sembako lancar.',
                 'membership_status' => MembershipStatus::Active,
+                'branch_id'         => $branchId,
             ],
             [
                 'member_number'     => 'BMI-2024-002',
@@ -40,6 +43,7 @@ class DemoDataSeeder extends Seeder
                 'address'           => 'Kp. Sukamaju RT 03/RW 02, Curug, Tangerang',
                 'notes'             => 'Anggota aktif, pengajuan pembiayaan untuk bengkel motor.',
                 'membership_status' => MembershipStatus::Active,
+                'branch_id'         => $branchId,
             ],
             [
                 'member_number'     => 'BMI-2024-003',
@@ -48,6 +52,7 @@ class DemoDataSeeder extends Seeder
                 'address'           => 'Perum Griya Asri Blok B2 No. 12, Cikupa',
                 'notes'             => 'Pengrajin konveksi busana muslimah.',
                 'membership_status' => MembershipStatus::Active,
+                'branch_id'         => $branchId,
             ],
             [
                 'member_number'     => 'BMI-2024-004',
@@ -56,6 +61,7 @@ class DemoDataSeeder extends Seeder
                 'address'           => 'Jl. Merdeka Barat No. 88, Balaraja',
                 'notes'             => 'Peternak budidaya lele.',
                 'membership_status' => MembershipStatus::Active,
+                'branch_id'         => $branchId,
             ],
         ];
 
@@ -78,6 +84,7 @@ class DemoDataSeeder extends Seeder
                 'products_services'   => 'Beras, minyak goreng, gula, sembako, dan kebutuhan pokok harian.',
                 'initial_condition'   => 'Usaha sudah berjalan stabil dengan omset harian rutin Rp 2-3 juta.',
                 'status'              => 'active',
+                'branch_id'           => $branchId,
             ]
         );
 
@@ -91,6 +98,7 @@ class DemoDataSeeder extends Seeder
                 'products_services'   => 'Servis motor, ganti oli, dan penjualan suku cadang motor.',
                 'initial_condition'   => 'Pelanggan ramai, memerlukan modal tambahan untuk etalase suku cadang resmi.',
                 'status'              => 'active',
+                'branch_id'           => $branchId,
             ]
         );
 
@@ -104,6 +112,7 @@ class DemoDataSeeder extends Seeder
                 'products_services'   => 'Jahit jilbab, gamis syari, mukena pesanan reseller.',
                 'initial_condition'   => 'Memiliki 3 mesin jahit, pasokan kain terkadang tersendat.',
                 'status'              => 'active',
+                'branch_id'           => $branchId,
             ]
         );
 
@@ -117,10 +126,9 @@ class DemoDataSeeder extends Seeder
                 'products_services'   => 'Bibit lele dan lele siap konsumsi ke warung pecel lele.',
                 'initial_condition'   => '4 kolam terpal, sering terkendala harga pakan pelet fluktuatif.',
                 'status'              => 'active',
+                'branch_id'           => $branchId,
             ]
         );
-
-
 
         // 3. Visits
         $v1 = Visit::create([
@@ -130,6 +138,7 @@ class DemoDataSeeder extends Seeder
             'evaluation_period' => now()->format('Y-m'),
             'status'            => VisitStatus::Completed,
             'field_notes'       => 'Pemeriksaan stok barang sembako, pencatatan kas masuk buku harian tertib.',
+            'branch_id'         => $branchId,
         ]);
 
         $v2 = Visit::create([
@@ -139,6 +148,7 @@ class DemoDataSeeder extends Seeder
             'evaluation_period' => now()->format('Y-m'),
             'status'            => VisitStatus::Completed,
             'field_notes'       => 'Kunjungan rutin, pelanggan servis harian mencapai 8-10 motor. Butuh pembinaan pencatatan stok oli.',
+            'branch_id'         => $branchId,
         ]);
 
         $v3 = Visit::create([
@@ -148,6 +158,7 @@ class DemoDataSeeder extends Seeder
             'evaluation_period' => now()->format('Y-m'),
             'status'            => VisitStatus::Completed,
             'field_notes'       => 'Pemeriksaan pesanan jilbab jelang musim liburan.',
+            'branch_id'         => $branchId,
         ]);
 
         $v4 = Visit::create([
@@ -157,6 +168,7 @@ class DemoDataSeeder extends Seeder
             'evaluation_period' => now()->format('Y-m'),
             'status'            => VisitStatus::Scheduled,
             'field_notes'       => 'Jadwal monitoring masa panen siklus ke-3 kolam lele.',
+            'branch_id'         => $branchId,
         ]);
 
         // 4. Evaluations & Details
@@ -173,6 +185,7 @@ class DemoDataSeeder extends Seeder
             'validated_by'     => $manager->id,
             'validated_at'     => now()->subDays(13),
             'validator_notes'  => 'Hasil evaluasi sangat baik, pembukuan rapih, disetujui untuk peningkatan plafond pembiayaan.',
+            'branch_id'        => $branchId,
         ]);
         foreach ($parameters as $p) {
             EvaluationDetail::create([
@@ -191,6 +204,7 @@ class DemoDataSeeder extends Seeder
             'status'           => EvaluationStatus::WaitingValidation,
             'submitted_by'     => $officer->id,
             'submitted_at'     => now()->subDays(7),
+            'branch_id'        => $branchId,
         ]);
         foreach ($parameters as $p) {
             EvaluationDetail::create([
@@ -207,6 +221,7 @@ class DemoDataSeeder extends Seeder
             'visit_id'         => $v3->id,
             'business_id'      => $b3->id,
             'status'           => EvaluationStatus::Draft,
+            'branch_id'        => $branchId,
         ]);
         foreach ($parameters as $p) {
             EvaluationDetail::create([

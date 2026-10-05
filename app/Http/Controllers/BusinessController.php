@@ -13,6 +13,8 @@ class BusinessController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Business::class);
+
         $businesses = Business::with('member')
             ->when($request->search, fn($q, $s) => $q->search($s))
             ->when($request->member_id, fn($q, $id) => $q->where('member_id', $id))
@@ -25,6 +27,8 @@ class BusinessController extends Controller
 
     public function create(Request $request)
     {
+        $this->authorize('create', Business::class);
+
         $members = Member::active()->orderBy('full_name')->get();
         $selectedMember = $request->member_id ? Member::find($request->member_id) : null;
 
@@ -33,6 +37,8 @@ class BusinessController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Business::class);
+
         $validated = $request->validate([
             'member_id'          => ['required', 'exists:members,id'],
             'name'               => ['required', 'string', 'max:100'],
@@ -53,6 +59,8 @@ class BusinessController extends Controller
 
     public function show(Business $business)
     {
+        $this->authorize('view', $business);
+
         $business->load(['member', 'visits.evaluation', 'evaluations']);
 
         return view('businesses.show', compact('business'));
@@ -60,6 +68,8 @@ class BusinessController extends Controller
 
     public function edit(Business $business)
     {
+        $this->authorize('update', $business);
+
         $members = Member::active()->orderBy('full_name')->get();
 
         return view('businesses.edit', compact('business', 'members'));
@@ -67,6 +77,8 @@ class BusinessController extends Controller
 
     public function update(Request $request, Business $business)
     {
+        $this->authorize('update', $business);
+
         $validated = $request->validate([
             'name'               => ['required', 'string', 'max:100'],
             'business_type'      => ['required', 'string', 'max:100'],
@@ -89,6 +101,8 @@ class BusinessController extends Controller
 
     public function destroy(Business $business)
     {
+        $this->authorize('delete', $business);
+
         $old = $business->toArray();
         $business->delete();
         $this->auditService->logDelete($business);
@@ -99,6 +113,8 @@ class BusinessController extends Controller
 
     public function history(Business $business)
     {
+        $this->authorize('view', $business);
+
         $business->load('member');
 
         $visits = $business->visits()

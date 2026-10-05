@@ -86,7 +86,10 @@ class User extends Authenticatable
         return match($this->role) {
             'petugas_lapangan' => 'Petugas Lapangan',
             'asisten_manajer'  => 'Asisten Manajer',
-            'manajer'          => 'Manajer',
+            'manajer'          => 'Manajer Cabang',
+            'pengurus'         => 'Pengurus / Pimpinan',
+            'pengawas'         => 'Auditor / Pengawas',
+            'system_admin'     => 'System Admin',
             default            => $this->role,
         };
     }

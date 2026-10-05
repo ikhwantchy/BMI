@@ -9,6 +9,7 @@ class AuditLog extends Model
 {
     protected $fillable = [
         'user_id',
+        'branch_id',
         'action',
         'entity_type',
         'entity_id',
@@ -16,6 +17,7 @@ class AuditLog extends Model
         'new_values',
         'ip_address',
         'user_agent',
+        'context',
     ];
 
     protected function casts(): array
@@ -29,5 +31,10 @@ class AuditLog extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

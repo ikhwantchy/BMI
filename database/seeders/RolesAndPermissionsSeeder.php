@@ -55,7 +55,22 @@ class RolesAndPermissionsSeeder extends Seeder
         $roleManager->syncPermissions([
             'members.view', 'businesses.view', 'visits.view', 'evaluations.view',
             'evaluations.approve', 'evaluations.reject', 'evaluations.revise',
-            'coaching.view', 'reports.view', 'reports.export'
+            'coaching.view', 'reports.view', 'reports.export',
+            'audit.view', 'audit.export',
+        ]);
+
+        $rolePengurus = Role::updateOrCreate(['name' => 'pengurus', 'guard_name' => 'web']);
+        $rolePengurus->syncPermissions([
+            'members.view', 'businesses.view', 'visits.view', 'evaluations.view',
+            'coaching.view', 'reports.view', 'reports.export',
+            'audit.view', 'audit.export',
+        ]);
+
+        $rolePengawas = Role::updateOrCreate(['name' => 'pengawas', 'guard_name' => 'web']);
+        $rolePengawas->syncPermissions([
+            'members.view', 'businesses.view', 'visits.view', 'evaluations.view',
+            'coaching.view', 'reports.view', 'reports.export',
+            'audit.view', 'audit.export',
         ]);
 
         $roleAdmin = Role::updateOrCreate(['name' => 'system_admin', 'guard_name' => 'web']);

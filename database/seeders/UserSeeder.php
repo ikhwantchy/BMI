@@ -43,6 +43,24 @@ class UserSeeder extends Seeder
                 'status'    => 'active',
                 'branch_id' => $branch->id,
             ],
+            [
+                'name'      => 'Pengurus / Pimpinan',
+                'username'  => 'pengurus',
+                'email'     => 'pengurus@koperasibmi.co.id',
+                'password'  => Hash::make('@Bukan123'),
+                'role'      => 'pengurus',
+                'status'    => 'active',
+                'branch_id' => null, // kantor pusat / semua cabang
+            ],
+            [
+                'name'      => 'Auditor / Pengawas',
+                'username'  => 'pengawas',
+                'email'     => 'pengawas@koperasibmi.co.id',
+                'password'  => Hash::make('@Bukan123'),
+                'role'      => 'pengawas',
+                'status'    => 'active',
+                'branch_id' => null, // kantor pusat / semua cabang
+            ],
         ];
 
         foreach ($users as $userData) {

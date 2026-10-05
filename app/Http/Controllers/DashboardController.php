@@ -16,7 +16,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasAnyRole(['manajer', 'asisten_manajer', 'system_admin'])) {
+        if ($user->hasAnyRole(['manajer', 'asisten_manajer', 'pengurus', 'pengawas', 'system_admin'])) {
             return $this->managerDashboard();
         }
 
@@ -74,9 +74,14 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        // Trend evaluasi per bulan — MySQL compatible (DATE_FORMAT, bukan strftime)
+        // Trend evaluasi per bulan — DB driver compatible (SQLite for tests / MySQL for prod)
+        $driver = DB::connection()->getDriverName();
+        $dateExpr = $driver === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : "DATE_FORMAT(created_at, '%Y-%m')";
+
         $monthlyTrend = Evaluation::selectRaw(
-                "DATE_FORMAT(created_at, '%Y-%m') as month,
+                "{$dateExpr} as month,
                  COUNT(*) as total,
                  AVG(total_score) as avg_score"
             )
