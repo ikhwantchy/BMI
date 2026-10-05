@@ -69,12 +69,20 @@ class ReportController extends Controller
             $paramQuery->whereHas('visit', fn($q) => $q->where('evaluation_period', $period));
         }
 
+        $evalIds = (clone $paramQuery)->pluck('id');
+
+        $detailAverages = \App\Models\EvaluationDetail::whereIn('evaluation_id', $evalIds)
+            ->join('evaluation_parameters', 'evaluation_details.parameter_id', '=', 'evaluation_parameters.id')
+            ->select('evaluation_parameters.code', DB::raw('avg(evaluation_details.score) as avg_score'))
+            ->groupBy('evaluation_parameters.code')
+            ->pluck('avg_score', 'code');
+
         $paramAverages = [
-            'kondisi_usaha'        => round($paramQuery->avg('business_condition_score') ?? 0, 1),
-            'perkembangan_omzet'   => round($paramQuery->avg('revenue_growth_score') ?? 0, 1),
-            'aktivitas_usaha'      => round($paramQuery->avg('business_activity_score') ?? 0, 1),
-            'pengelolaan_keuangan' => round($paramQuery->avg('financial_management_score') ?? 0, 1),
-            'kendala_usaha'        => round($paramQuery->avg('business_constraint_score') ?? 0, 1),
+            'kondisi_usaha'        => round($detailAverages['kondisi_usaha'] ?? 0, 1),
+            'perkembangan_omzet'   => round($detailAverages['perkembangan_omzet'] ?? 0, 1),
+            'aktivitas_usaha'      => round($detailAverages['aktivitas_usaha'] ?? 0, 1),
+            'pengelolaan_keuangan' => round($detailAverages['pengelolaan_keuangan'] ?? 0, 1),
+            'kendala_usaha'        => round($detailAverages['kendala_usaha'] ?? 0, 1),
             'overall_avg'          => round($paramQuery->avg('total_score') ?? 0, 1),
         ];
 
@@ -92,9 +100,9 @@ class ReportController extends Controller
             $evals = (clone $evalQuery)->get();
             $totalEvals = $evals->count();
             $avgScore = $totalEvals > 0 ? round($evals->avg('total_score'), 1) : 0;
-            $recommendedCount = $evals->where('recommendation.value', 'recommended')->count();
-            $coachingCount = $evals->where('recommendation.value', 'follow_up_coaching')->count();
-            $notRecommendedCount = $evals->where('recommendation.value', 'not_recommended')->count();
+            $recommendedCount = $evals->filter(fn($e) => ($e->recommendation?->value ?? $e->recommendation) === 'recommended')->count();
+            $coachingCount = $evals->filter(fn($e) => ($e->recommendation?->value ?? $e->recommendation) === 'continued_coaching')->count();
+            $notRecommendedCount = $evals->filter(fn($e) => ($e->recommendation?->value ?? $e->recommendation) === 'not_recommended')->count();
 
             return [
                 'branch'              => $branch,

@@ -39,27 +39,39 @@
          class="fixed inset-0 z-20 bg-black/40 lg:hidden"></div>
 
     {{-- ── Sidebar ──────────────────────────────────────────────────────────── --}}
-    <aside class="fixed inset-y-0 left-0 z-30 flex flex-col w-60 bg-[#009a4c] border-r border-[#00803f]
+    <aside class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-[#008f45] border-r border-[#007437] shadow-lg
                   transform transition-transform duration-200 ease-in-out
                   lg:relative lg:translate-x-0"
            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
         {{-- Logo Brand --}}
-        <a href="{{ route('home') }}" class="flex items-center justify-start px-4 py-3.5 border-b border-[#00803f] hover:bg-[#00803f]/50 transition-colors" title="Lihat Landing Page">
-            <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo BMI" class="h-8 w-auto max-w-[170px] object-contain object-left">
-        </a>
+        <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+            <a href="{{ route('home') }}" class="flex items-center gap-3 transition-opacity hover:opacity-90" title="Koperasi Syariah BMI">
+                <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo Koperasi Syariah BMI" class="h-9 w-auto object-contain">
+            </a>
+            <span class="inline-flex lg:hidden">
+                <button @click="sidebarOpen = false" class="text-white/80 hover:text-white p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </span>
+        </div>
 
-        {{-- User info --}}
-        <div class="px-5 py-3 border-b border-[#00803f] flex items-center justify-between">
-            <div class="min-w-0">
-                <p class="text-white text-xs font-semibold truncate">{{ auth()->user()->name }}</p>
-                <p class="text-emerald-100 text-[11px] truncate">{{ auth()->user()->roleLabel() }}</p>
+        {{-- User info card --}}
+        <div class="mx-3.5 my-3 p-3 bg-white/10 rounded-xl border border-white/10 flex items-center justify-between shadow-xs">
+            <div class="min-w-0 pr-2">
+                <p class="text-white text-xs font-bold truncate leading-tight">{{ auth()->user()->name }}</p>
+                <p class="text-emerald-100 text-[11px] truncate mt-0.5">{{ auth()->user()->roleLabel() }}</p>
             </div>
-            <span class="w-2 h-2 shrink-0 bg-[#e4c85b] rounded-full" title="Online"></span>
+            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/20 text-[10px] font-semibold text-emerald-200 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#e4c85b] animate-pulse"></span>
+                <span>Aktif</span>
+            </div>
         </div>
 
         {{-- Navigation --}}
-        <nav class="flex-1 px-3 py-3 space-y-2 overflow-y-auto">
+        <nav class="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto">
             @php
                 $userRole = auth()->user()->role;
 
@@ -244,15 +256,17 @@
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {{-- Top bar --}}
-        <header class="flex items-center gap-4 px-5 py-3 bg-white border-b border-gray-200 shrink-0">
-            <button @click="sidebarOpen = !sidebarOpen"
-                    class="lg:hidden p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
-            <div>
-                <h1 class="text-sm font-semibold text-gray-800">@yield('page-title', 'Sistem Evaluasi Usaha')</h1>
+        <header class="flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-200 shrink-0 shadow-xs">
+            <div class="flex items-center gap-3">
+                <button @click="sidebarOpen = !sidebarOpen"
+                        class="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-base font-bold text-gray-800 tracking-tight">@yield('page-title', 'Sistem Evaluasi Usaha')</h1>
+                </div>
             </div>
 
             {{-- Action Center / Notification Badges --}}
@@ -269,10 +283,10 @@
                 } catch (\Throwable $e) {}
             @endphp
 
-            <div class="ml-auto flex items-center gap-3 text-xs text-gray-500">
+            <div class="flex items-center gap-3 text-xs">
                 @if($waitingValidationCount > 0)
                     <a href="{{ route('evaluations.index', ['status' => 'waiting_validation']) }}"
-                       class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-300 text-amber-800 font-semibold text-[11px] hover:bg-amber-100 transition-colors"
+                       class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-300 text-amber-800 font-semibold text-xs rounded-full hover:bg-amber-100 transition-colors"
                        title="{{ $waitingValidationCount }} Evaluasi menunggu validasi">
                         <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
                         <span>{{ $waitingValidationCount }} Perlu Validasi</span>
@@ -281,45 +295,45 @@
 
                 @if($needsRevisionCount > 0)
                     <a href="{{ route('evaluations.index', ['status' => 'needs_revision']) }}"
-                       class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 border border-orange-300 text-orange-800 font-semibold text-[11px] hover:bg-orange-100 transition-colors"
+                       class="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 border border-orange-300 text-orange-800 font-semibold text-xs rounded-full hover:bg-orange-100 transition-colors"
                        title="{{ $needsRevisionCount }} Evaluasi perlu direvisi">
                         <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
                         <span>{{ $needsRevisionCount }} Perlu Revisi</span>
                     </a>
                 @endif
 
-                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 border border-[#e4c85b] bg-[#fefce8] text-[#9c7c10] font-medium text-[11px]">
-                    <span class="w-1.5 h-1.5 bg-[#e4c85b]"></span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#e4c85b]/60 bg-[#fefce8] text-[#9c7c10] font-semibold text-xs">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#e4c85b]"></span>
                     BMI Syariah
                 </span>
-                <span class="hidden sm:inline text-gray-400 font-mono">{{ now()->translatedFormat('l, d F Y') }}</span>
+                <span class="hidden md:inline text-gray-400 font-medium text-xs">{{ now()->translatedFormat('l, d F Y') }}</span>
             </div>
         </header>
 
         {{-- Flash Messages --}}
         @if(session('success') || session('error'))
-            <div class="px-5 pt-4 shrink-0">
+            <div class="px-6 pt-4 shrink-0">
                 @if(session('success'))
-                    <div class="flex items-center gap-3 px-4 py-3 bg-[#e6f7ee] border border-[#009a4c] text-[#006331] text-sm">
-                        <svg class="w-4 h-4 shrink-0 text-[#009a4c]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-3 px-4 py-3 bg-[#e6f7ee] border border-[#009a4c] text-[#006331] text-sm rounded-xl shadow-xs">
+                        <svg class="w-5 h-5 shrink-0 text-[#009a4c]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>
-                        {{ session('success') }}
+                        <span>{{ session('success') }}</span>
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-300 text-red-800 text-sm">
-                        <svg class="w-4 h-4 shrink-0 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-300 text-red-800 text-sm rounded-xl shadow-xs">
+                        <svg class="w-5 h-5 shrink-0 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
-                        {{ session('error') }}
+                        <span>{{ session('error') }}</span>
                     </div>
                 @endif
             </div>
         @endif
 
         {{-- Page Content --}}
-        <main class="flex-1 overflow-y-auto px-5 pb-8">
+        <main class="flex-1 overflow-y-auto bg-gray-50 px-6 py-6">
             @yield('content')
         </main>
     </div>
