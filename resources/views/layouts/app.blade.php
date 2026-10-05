@@ -449,8 +449,17 @@
     </div>
 </div>
 
+    {{-- Fallback Styles in case Tailwind purged them --}}
+    <style>
+        .drawer-z-backdrop { z-index: 40 !important; }
+        .drawer-z-panel { z-index: 50 !important; }
+        .drawer-translate-x-full { transform: translateX(100%) !important; }
+        .drawer-translate-x-0 { transform: translateX(0) !important; }
+        .drawer-transition { transition-property: transform; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
+    </style>
+
     {{-- Global Drawer Form Overlay --}}
-    <div x-data="drawerFormManager()" @open-drawer.window="openDrawer($event.detail)" @close-drawer.window="closeDrawer()">
+    <div x-data="drawerFormManager()" @open-drawer.window="openDrawer($event.detail)" @close-drawer.window="closeDrawer()" class="drawer-container">
         <!-- Backdrop -->
         <div x-show="open" 
              x-transition:enter="transition-opacity ease-linear duration-300"
@@ -459,19 +468,19 @@
              x-transition:leave="transition-opacity ease-linear duration-300"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm" 
+             class="fixed inset-0 bg-black/50 drawer-z-backdrop backdrop-blur-sm" 
              style="display: none;"
              @click="closeDrawer()"></div>
              
-        <!-- Drawer Panel (Right Side) -->
+         <!-- Drawer Panel (Right Side) -->
         <div x-show="open"
-             x-transition:enter="transform transition ease-out duration-300"
-             x-transition:enter-start="translate-x-full"
-             x-transition:enter-end="translate-x-0"
-             x-transition:leave="transform transition ease-in duration-300"
-             x-transition:leave-start="translate-x-0"
-             x-transition:leave-end="translate-x-full"
-             class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col transform"
+             x-transition:enter="drawer-transition ease-out"
+             x-transition:enter-start="drawer-translate-x-full"
+             x-transition:enter-end="drawer-translate-x-0"
+             x-transition:leave="drawer-transition ease-in"
+             x-transition:leave-start="drawer-translate-x-0"
+             x-transition:leave-end="drawer-translate-x-full"
+             class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl drawer-z-panel flex flex-col transform"
              style="display: none;">
              
              <!-- Drawer Header -->
