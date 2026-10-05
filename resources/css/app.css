@@ -1,0 +1,186 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --color-bmi-green: #009a4c;
+    --color-bmi-green-dark: #007d3e;
+    --color-bmi-green-light: #e6f7ee;
+    --color-bmi-yellow: #e4c85b;
+    --color-bmi-yellow-dark: #cda828;
+    --color-bmi-yellow-light: #fefce8;
+    --color-bmi-blue: #00a1e8;
+    --color-bmi-blue-dark: #0084be;
+    --color-bmi-blue-light: #f0f9ff;
+}
+
+:root {
+    --bmi-green: #009a4c;
+    --bmi-green-dark: #007d3e;
+    --bmi-green-light: #e6f7ee;
+    --bmi-yellow: #e4c85b;
+    --bmi-yellow-dark: #cda828;
+    --bmi-yellow-light: #fefce8;
+    --bmi-blue: #00a1e8;
+    --bmi-blue-dark: #0084be;
+    --bmi-blue-light: #f0f9ff;
+}
+
+/* ── Global resets: Sharp, Minimalist, No Shadow, Max Semi-bold ───────────── */
+*, *::before, *::after {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+h1, h2, h3, h4, h5, h6, b, strong, .font-bold, .font-extrabold, .font-black {
+    font-weight: 600 !important;
+}
+
+/* ── Brand Color Utility Classes ─────────────────────────────────────────── */
+.bg-bmi-green { background-color: #009a4c !important; }
+.hover\:bg-bmi-green-dark:hover { background-color: #007d3e !important; }
+.text-bmi-green { color: #009a4c !important; }
+.border-bmi-green { border-color: #009a4c !important; }
+.bg-bmi-green-light { background-color: #e6f7ee !important; }
+.text-bmi-green-dark { color: #006331 !important; }
+
+.bg-bmi-yellow { background-color: #e4c85b !important; }
+.hover\:bg-bmi-yellow-dark:hover { background-color: #cda828 !important; }
+.text-bmi-yellow { color: #9c7c10 !important; }
+.border-bmi-yellow { border-color: #e4c85b !important; }
+.bg-bmi-yellow-light { background-color: #fefce8 !important; }
+
+.bg-bmi-blue { background-color: #00a1e8 !important; }
+.hover\:bg-bmi-blue-dark:hover { background-color: #0084be !important; }
+.text-bmi-blue { color: #0084be !important; }
+.border-bmi-blue { border-color: #00a1e8 !important; }
+.bg-bmi-blue-light { background-color: #f0f9ff !important; }
+
+/* ── Custom minimalist utility components ────────────────────────────────── */
+.input-base {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    color: #111827;
+    transition: border-color 0.15s ease-in-out;
+}
+.input-base:focus {
+    outline: none;
+    border-color: #009a4c;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #009a4c;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background-color 0.15s ease-in-out;
+    text-decoration: none;
+}
+.btn-primary:hover {
+    background-color: #007d3e;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.15s ease-in-out;
+    text-decoration: none;
+}
+.btn-secondary:hover {
+    background-color: #f9fafb;
+}
+
+.btn-yellow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #e4c85b;
+    color: #1f2937;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background-color 0.15s ease-in-out;
+    text-decoration: none;
+}
+.btn-yellow:hover {
+    background-color: #cda828;
+}
+
+.btn-blue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #00a1e8;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background-color 0.15s ease-in-out;
+    text-decoration: none;
+}
+.btn-blue:hover {
+    background-color: #0084be;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Table minimalist defaults ───────────────────────────────────────────── */
+.data-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.data-table td {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.data-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.data-table tr:hover td {
+    background-color: #f9fafb;
+}

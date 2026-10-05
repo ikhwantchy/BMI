@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Dashboard') — Koperasi Syariah BMI</title>
+    <meta name="description" content="Sistem Informasi Evaluasi Pembinaan Usaha Anggota Koperasi Syariah Benteng Mikro Indonesia">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-kopsyah-bmi-new.png') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
+</head>
+<body class="h-full bg-gray-50 text-gray-900 antialiased" style="font-family:'Plus Jakarta Sans',sans-serif">
+
+<div class="flex h-full" x-data="{ sidebarOpen: false }">
+
+    {{-- ── Mobile overlay ──────────────────────────────────────────────────── --}}
+    <div x-show="sidebarOpen"
+         x-transition:enter="transition-opacity ease-linear duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="sidebarOpen = false"
+         class="fixed inset-0 z-20 bg-black/40 lg:hidden"></div>
+
+    {{-- ── Sidebar ──────────────────────────────────────────────────────────── --}}
+    <aside class="fixed inset-y-0 left-0 z-30 flex flex-col w-60 bg-[#009a4c] border-r border-[#00803f]
+                  transform transition-transform duration-200 ease-in-out
+                  lg:relative lg:translate-x-0"
+           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+
+        {{-- Logo Brand --}}
+        <a href="{{ route('home') }}" class="flex items-center gap-3 px-5 py-4 border-b border-[#00803f] hover:bg-[#00803f]/50 transition-colors" title="Lihat Landing Page">
+            <img src="{{ asset('images/logo-kopsyah-bmi-new.png') }}" alt="Logo Koperasi Syariah BMI" class="w-8 h-8 shrink-0 object-contain">
+            <div class="min-w-0">
+                <p class="text-white text-sm font-semibold leading-tight truncate">Kopsyah BMI</p>
+                <p class="text-emerald-100 text-xs truncate">Benteng Mikro Indonesia</p>
+            </div>
+        </a>
+
+        {{-- User info --}}
+        <div class="px-5 py-3 border-b border-[#00803f] flex items-center justify-between">
+            <div class="min-w-0">
+                <p class="text-white text-xs font-semibold truncate">{{ auth()->user()->name }}</p>
+                <p class="text-emerald-100 text-[11px] truncate">{{ auth()->user()->roleLabel() }}</p>
+            </div>
+            <span class="w-2 h-2 shrink-0 bg-[#e4c85b]" title="Online"></span>
+        </div>
+
+        {{-- Navigation --}}
+        <nav class="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+            @php
+                $userRole = auth()->user()->role;
+                $navItems = [
+                    [
+                        'route' => 'dashboard',
+                        'label' => 'Dashboard',
+                        'roles' => ['petugas_lapangan','asisten_manajer','manajer'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>',
+                    ],
+                    [
+                        'route' => 'members.index',
+                        'label' => 'Anggota',
+                        'roles' => ['petugas_lapangan','asisten_manajer','manajer'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>',
+                    ],
+                    [
+                        'route' => 'businesses.index',
+                        'label' => 'Usaha',
+                        'roles' => ['petugas_lapangan','asisten_manajer','manajer'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
+                    ],
+                    [
+                        'route' => 'visits.index',
+                        'label' => 'Kunjungan',
+                        'roles' => ['petugas_lapangan','asisten_manajer','manajer'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>',
+                    ],
+                    [
+                        'route' => 'evaluations.index',
+                        'label' => 'Evaluasi',
+                        'roles' => ['petugas_lapangan','asisten_manajer','manajer'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>',
+                    ],
+                    [
+                        'route' => 'coaching.index',
+                        'label' => 'Pembinaan',
+                        'roles' => ['petugas_lapangan','asisten_manajer','manajer'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>',
+                    ],
+                    [
+                        'route' => 'reports.index',
+                        'label' => 'Laporan',
+                        'roles' => ['asisten_manajer','manajer'],
+                        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>',
+                    ],
+                ];
+            @endphp
+
+            @foreach($navItems as $item)
+                @if(in_array($userRole, $item['roles']))
+                    @php $isActive = request()->routeIs($item['route'] . '*'); @endphp
+                    <a href="{{ route($item['route']) }}"
+                       class="flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors border-l-2
+                              {{ $isActive
+                                  ? 'bg-[#007b3d] text-white border-[#e4c85b] font-semibold'
+                                  : 'border-transparent text-white/90 hover:text-white hover:bg-[#00803f]' }}">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                            {!! $item['icon'] !!}
+                        </svg>
+                        {{ $item['label'] }}
+                    </a>
+                @endif
+            @endforeach
+        </nav>
+
+
+
+        {{-- Logout --}}
+        <div class="p-2 border-t border-[#00803f]">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                        class="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-[#00803f] transition-colors">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    Keluar
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    {{-- ── Main Content ────────────────────────────────────────────────────── --}}
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {{-- Top bar --}}
+        <header class="flex items-center gap-4 px-5 py-3 bg-white border-b border-gray-200 shrink-0">
+            <button @click="sidebarOpen = !sidebarOpen"
+                    class="lg:hidden p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div>
+                <h1 class="text-sm font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
+            </div>
+            <div class="ml-auto flex items-center gap-3 text-xs text-gray-500">
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 border border-[#e4c85b] bg-[#fefce8] text-[#9c7c10] font-medium text-[11px]">
+                    <span class="w-1.5 h-1.5 bg-[#e4c85b]"></span>
+                    BMI Syariah
+                </span>
+                <span class="hidden sm:inline text-gray-400 font-mono">{{ now()->translatedFormat('l, d F Y') }}</span>
+            </div>
+        </header>
+
+        {{-- Flash Messages --}}
+        @if(session('success') || session('error'))
+            <div class="px-5 pt-4 shrink-0">
+                @if(session('success'))
+                    <div class="flex items-center gap-3 px-4 py-3 bg-[#e6f7ee] border border-[#009a4c] text-[#006331] text-sm">
+                        <svg class="w-4 h-4 shrink-0 text-[#009a4c]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-300 text-red-800 text-sm">
+                        <svg class="w-4 h-4 shrink-0 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        {{ session('error') }}
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        {{-- Page Content --}}
+        <main class="flex-1 overflow-y-auto px-5 pb-8">
+            @yield('content')
+        </main>
+    </div>
+</div>
+
+@stack('scripts')
+</body>
+</html>
