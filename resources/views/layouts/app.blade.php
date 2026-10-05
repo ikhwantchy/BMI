@@ -36,10 +36,10 @@
 
     {{-- ── Sidebar ──────────────────────────────────────────────────────────── --}}
     <aside :class="sidebarOpen ? 'w-60 translate-x-0' : 'w-14 -translate-x-full lg:translate-x-0'"
-           class="fixed inset-y-0 left-0 z-30 flex flex-col bg-[#008f45] border-r border-[#007437] shadow-lg lg:relative shrink-0 transition-all duration-200 ease-in-out">
+           class="fixed inset-y-0 left-0 z-30 flex flex-col bg-[#008f45] border-r border-[#007437] shadow-lg lg:relative shrink-0">
 
         {{-- Logo Brand --}}
-        <div class="h-14 border-b border-white/10 flex items-center shrink-0 transition-all duration-200"
+        <div class="h-14 border-b border-white/10 flex items-center shrink-0"
              :class="sidebarOpen ? 'px-4 justify-start' : 'px-0 justify-center'">
             <a href="{{ route('home') }}" class="flex items-center transition-opacity hover:opacity-90" title="Koperasi Syariah BMI">
                 <img x-show="sidebarOpen"
@@ -55,7 +55,7 @@
         </div>
 
         {{-- Navigation --}}
-        <nav class="flex-1 overflow-y-auto overflow-x-hidden transition-all duration-200"
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden"
              :class="sidebarOpen ? 'px-3 py-4 space-y-2' : 'px-2 py-3 space-y-3'">
             @php
                 $userRole = auth()->user()->role;
@@ -173,7 +173,7 @@
                                     </svg>
                                     <span class="truncate">{{ $group['label'] }}</span>
                                 </div>
-                                <svg class="w-4 h-4 shrink-0 transform transition-transform duration-200 ease-in-out text-white/70"
+                                <svg class="w-4 h-4 shrink-0 transform text-white/70 {{ $isGroupActive ? 'rotate-90' : '' }}"
                                      :class="activeCategory === '{{ $groupKey }}' ? 'rotate-90' : ''"
                                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -182,6 +182,7 @@
 
                             {{-- Submenu Items (Text Only, Thin 1px White Guide Line, Clean & Direct) --}}
                             <div x-show="activeCategory === '{{ $groupKey }}'"
+                                 @if(!$isGroupActive) style="display: none;" @endif
                                  class="mt-1.5 ml-4 pl-3.5 border-l border-white/70 space-y-1.5">
                                 @foreach($visibleItems as $item)
                                     @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
@@ -218,7 +219,7 @@
         </nav>
 
         {{-- Collapse / Expand Sidebar (Single button at bottom left matching reference) --}}
-        <div class="border-t border-white/10 flex items-center shrink-0 transition-all duration-200"
+        <div class="border-t border-white/10 flex items-center shrink-0"
              :class="sidebarOpen ? 'px-2.5 py-2 justify-start' : 'p-2 justify-center'">
             <button type="button"
                     @click="sidebarOpen = !sidebarOpen"
