@@ -459,19 +459,19 @@
              x-transition:leave="transition-opacity ease-linear duration-300"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-black/50 z-[90] backdrop-blur-sm" 
+             class="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm" 
              style="display: none;"
              @click="closeDrawer()"></div>
              
         <!-- Drawer Panel (Right Side) -->
         <div x-show="open"
-             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter="transform transition ease-out duration-300"
              x-transition:enter-start="translate-x-full"
              x-transition:enter-end="translate-x-0"
-             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave="transform transition ease-in duration-300"
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="translate-x-full"
-             class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-[100] flex flex-col"
+             class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col transform"
              style="display: none;">
              
              <!-- Drawer Header -->
