@@ -78,6 +78,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/audit', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit.index');
     Route::get('/audit/export', [\App\Http\Controllers\AuditLogController::class, 'export'])->name('audit.export');
 
+    // Log Keamanan (percobaan login gagal & aktivitas mencurigakan)
+    Route::get('/security/logs', [\App\Http\Controllers\SecurityController::class, 'logs'])->name('security.logs');
+
+    // Cadangan Data (Backup Database)
+    Route::get('/security/backup', [\App\Http\Controllers\SecurityController::class, 'backup'])->name('security.backup');
+    Route::post('/security/backup/create', [\App\Http\Controllers\SecurityController::class, 'createBackup'])->name('security.backup.create');
+    Route::get('/security/backup/download/{filename}', [\App\Http\Controllers\SecurityController::class, 'downloadBackup'])->name('security.backup.download');
+    Route::delete('/security/backup/delete/{filename}', [\App\Http\Controllers\SecurityController::class, 'deleteBackup'])->name('security.backup.delete');
+
+    // Sesi Aktif
+    Route::get('/security/sessions', [\App\Http\Controllers\SecurityController::class, 'sessions'])->name('security.sessions');
+    Route::delete('/security/sessions/{sessionId}', [\App\Http\Controllers\SecurityController::class, 'revokeSession'])->name('security.sessions.revoke');
+    Route::delete('/security/sessions', [\App\Http\Controllers\SecurityController::class, 'revokeAllSessions'])->name('security.sessions.revoke-all');
+
     // Manajemen Pengguna
     Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show', 'destroy']);
     Route::patch('/users/{user}/toggle', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle');
