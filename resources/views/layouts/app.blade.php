@@ -453,6 +453,7 @@
     <style>
         .drawer-z-backdrop { z-index: 40 !important; }
         .drawer-z-panel { z-index: 50 !important; }
+        .drawer-backdrop-blur { backdrop-filter: blur(6px) !important; -webkit-backdrop-filter: blur(6px) !important; }
         .drawer-translate-x-full { transform: translateX(100%) !important; }
         .drawer-translate-x-0 { transform: translateX(0) !important; }
         .drawer-transition { transition-property: transform; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
@@ -468,7 +469,7 @@
              x-transition:leave="transition-opacity ease-linear duration-300"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-black/50 drawer-z-backdrop backdrop-blur-sm" 
+             class="fixed inset-0 bg-black/50 drawer-z-backdrop drawer-backdrop-blur" 
              style="display: none;"
              @click="closeDrawer()"></div>
              
