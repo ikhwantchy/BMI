@@ -61,7 +61,7 @@ class LoginController extends Controller
 
         $this->auditService->logLogin(Auth::id());
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('members.index'));
     }
 
     public function logout(Request $request): RedirectResponse

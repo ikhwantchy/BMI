@@ -59,7 +59,7 @@ class BranchController extends Controller
     private function authorizeAccess(): void
     {
         $user = Auth::user();
-        if (!$user->can('branches.manage') && !$user->hasAnyRole(['system_admin', 'pengurus', 'pengawas', 'manajer'])) {
+        if (!$user->checkRole(['system_admin', 'pengurus', 'pengawas', 'manajer'])) {
             abort(403, 'Akses ditolak.');
         }
     }
@@ -67,8 +67,8 @@ class BranchController extends Controller
     private function authorizeManage(): void
     {
         $user = Auth::user();
-        if (!$user->hasAnyRole(['system_admin', 'pengurus'])) {
-            abort(403, 'Hanya Super Admin atau Pengurus yang dapat mengelola data cabang.');
+        if (!$user->checkRole(['system_admin', 'pengurus', 'manajer'])) {
+            abort(403, 'Hanya Administrator, Pengurus, atau Manajer yang dapat mengelola data cabang.');
         }
     }
 }

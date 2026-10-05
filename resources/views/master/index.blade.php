@@ -12,9 +12,9 @@
             <h2 class="text-base font-semibold text-gray-900 tracking-tight">Master Data Parameter & Referensi</h2>
             <p class="text-xs text-gray-500 mt-0.5">Daftar referensi baku untuk jenis usaha, kategori kendala, dan program pembinaan</p>
         </div>
-        @if(auth()->user()->hasAnyRole(['system_admin', 'pengurus']))
+        @if(auth()->user()->checkRole(['system_admin', 'pengurus', 'manajer']))
             <button onclick="document.getElementById('modal-add-master').classList.remove('hidden')"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#006633] text-white text-xs font-semibold hover:bg-[#00552b] transition-colors shadow-sm cursor-pointer">
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#009a4c] text-white text-xs font-semibold hover:bg-[#007d3e] transition-colors shadow-sm cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -70,7 +70,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-right">
-                                @if(auth()->user()->hasAnyRole(['system_admin', 'pengurus']))
+                                @if(auth()->user()->checkRole(['system_admin', 'pengurus', 'manajer']))
                                     <button onclick="editMaster({{ json_encode($item) }})"
                                             class="text-indigo-600 hover:text-indigo-900 font-medium cursor-pointer">
                                         Edit

@@ -61,6 +61,24 @@ class User extends Authenticatable
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
+    public function checkRole(string|array $roles): bool
+    {
+        $roles = (array) $roles;
+        if (in_array($this->role, $roles)) {
+            return true;
+        }
+        try {
+            return $this->hasAnyRole($roles);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    public function isSystemAdmin(): bool
+    {
+        return $this->checkRole('system_admin');
+    }
+
     public function isOfficer(): bool
     {
         return $this->role === 'petugas_lapangan';
@@ -73,12 +91,22 @@ class User extends Authenticatable
 
     public function isManager(): bool
     {
-        return $this->role === 'manajer';
+        return in_array($this->role, ['manajer', 'asisten_manajer']);
     }
 
     public function canValidate(): bool
     {
-        return in_array($this->role, ['asisten_manajer', 'manajer']);
+        return in_array($this->role, ['asisten_manajer', 'manajer', 'system_admin', 'pengurus']);
+    }
+
+    public function canManageBranches(): bool
+    {
+        return $this->checkRole(['system_admin', 'pengurus', 'manajer']);
+    }
+
+    public function canManageUsers(): bool
+    {
+        return $this->checkRole(['system_admin', 'manajer', 'pengurus']);
     }
 
     public function roleLabel(): string

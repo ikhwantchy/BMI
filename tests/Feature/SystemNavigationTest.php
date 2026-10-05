@@ -30,7 +30,7 @@ class SystemNavigationTest extends TestCase
     public function test_manager_can_access_dashboard_and_reports(): void
     {
         $response = $this->actingAs($this->manager)->get(route('dashboard'));
-        $response->assertStatus(200);
+        $response->assertRedirect(route('members.index'));
 
         $response = $this->actingAs($this->manager)->get(route('reports.index'));
         $response->assertStatus(200);
@@ -49,7 +49,7 @@ class SystemNavigationTest extends TestCase
     public function test_officer_can_access_visits_and_businesses(): void
     {
         $response = $this->actingAs($this->officer)->get(route('dashboard'));
-        $response->assertStatus(200);
+        $response->assertRedirect(route('members.index'));
 
         $response = $this->actingAs($this->officer)->get(route('businesses.index'));
         $response->assertStatus(200);

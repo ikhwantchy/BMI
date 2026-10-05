@@ -45,9 +45,9 @@
                 {{-- CTA Button --}}
                 <div class="flex items-center gap-3">
                     @auth
-                        <a href="{{ route('dashboard') }}"
+                        <a href="{{ route('members.index') }}"
                            class="inline-flex items-center gap-2 px-4 py-2 bg-[#009a4c] hover:bg-[#007d3e] text-white text-xs font-semibold uppercase tracking-wider transition-colors">
-                            <span>Buka Dashboard</span>
+                            <span>Buka Sistem</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                             </svg>

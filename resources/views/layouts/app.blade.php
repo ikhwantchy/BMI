@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') — Koperasi Syariah BMI</title>
+    <title>@yield('title', 'Sistem Evaluasi Usaha') — Koperasi Syariah BMI</title>
     <meta name="description" content="Sistem Informasi Evaluasi Pembinaan Usaha Anggota Koperasi Syariah Benteng Mikro Indonesia">
     <link rel="icon" type="image/png" href="{{ asset('images/logo-kopsyah-bmi-new.png') }}">
 
@@ -45,8 +45,8 @@
            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
         {{-- Logo Brand --}}
-        <a href="{{ route('home') }}" class="flex items-center justify-start pl-3.5 pr-2 py-4 border-b border-[#00803f] hover:bg-[#00803f]/50 transition-colors" title="Lihat Landing Page">
-            <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo BMI" class="h-11 w-auto max-w-[225px] object-contain object-left">
+        <a href="{{ route('home') }}" class="flex items-center justify-start px-4 py-3.5 border-b border-[#00803f] hover:bg-[#00803f]/50 transition-colors" title="Lihat Landing Page">
+            <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo BMI" class="h-8 w-auto max-w-[170px] object-contain object-left">
         </a>
 
         {{-- User info --}}
@@ -59,12 +59,9 @@
         </div>
 
         {{-- Navigation --}}
-        <nav class="flex-1 px-3 py-3 space-y-1.5 overflow-y-auto">
+        <nav class="flex-1 px-3 py-3 space-y-2 overflow-y-auto">
             @php
                 $userRole = auth()->user()->role;
-
-                // Dashboard (Standalone top item)
-                $isDashboardActive = request()->routeIs('dashboard');
 
                 // Accordion Groups matching reference structure
                 $accordionGroups = [
@@ -171,19 +168,6 @@
                 ];
             @endphp
 
-            {{-- Standalone Dashboard Item --}}
-            <a href="{{ route('dashboard') }}"
-               style="color: #ffffff !important;"
-               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-white
-                      {{ $isDashboardActive
-                          ? 'bg-white/20 font-semibold shadow-sm'
-                          : 'hover:bg-white/10' }}">
-                <svg class="w-4 h-4 shrink-0 text-white" style="color: #ffffff !important;" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-                </svg>
-                <span class="text-white" style="color: #ffffff !important;">Dashboard</span>
-            </a>
-
             {{-- Accordion Categories --}}
             @foreach($accordionGroups as $groupKey => $group)
                 @php
@@ -268,7 +252,7 @@
                 </svg>
             </button>
             <div>
-                <h1 class="text-sm font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
+                <h1 class="text-sm font-semibold text-gray-800">@yield('page-title', 'Sistem Evaluasi Usaha')</h1>
             </div>
 
             {{-- Action Center / Notification Badges --}}

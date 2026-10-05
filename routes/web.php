@@ -25,8 +25,10 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard (redirected to members)
+    Route::get('/dashboard', function () {
+        return redirect()->route('members.index');
+    })->name('dashboard');
 
     // Members
     Route::resource('members', MemberController::class);
