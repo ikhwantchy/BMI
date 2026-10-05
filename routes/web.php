@@ -81,11 +81,15 @@ Route::middleware('auth')->group(function () {
     // Log Keamanan (percobaan login gagal & aktivitas mencurigakan)
     Route::get('/security/logs', [\App\Http\Controllers\SecurityController::class, 'logs'])->name('security.logs');
 
-    // Cadangan Data (Backup Database)
+    // Cadangan Data (Backup Database) & Google Drive Sync
     Route::get('/security/backup', [\App\Http\Controllers\SecurityController::class, 'backup'])->name('security.backup');
     Route::post('/security/backup/create', [\App\Http\Controllers\SecurityController::class, 'createBackup'])->name('security.backup.create');
-    Route::get('/security/backup/download/{filename}', [\App\Http\Controllers\SecurityController::class, 'downloadBackup'])->name('security.backup.download');
-    Route::delete('/security/backup/delete/{filename}', [\App\Http\Controllers\SecurityController::class, 'deleteBackup'])->name('security.backup.delete');
+    Route::get('/security/backup/download/{filename}', [\App\Http\Controllers\SecurityController::class, 'downloadBackup'])->name('security.backup.download')->where('filename', '[A-Za-z0-9_\-\.]+');
+    Route::delete('/security/backup/delete/{filename}', [\App\Http\Controllers\SecurityController::class, 'deleteBackup'])->name('security.backup.delete')->where('filename', '[A-Za-z0-9_\-\.]+');
+    Route::post('/security/backup/gdrive', [\App\Http\Controllers\SecurityController::class, 'backupToGdrive'])->name('security.backup.gdrive');
+    Route::post('/security/backup/gdrive-upload/{filename}', [\App\Http\Controllers\SecurityController::class, 'uploadToGdrive'])->name('security.backup.gdrive-upload')->where('filename', '[A-Za-z0-9_\-\.]+');
+    Route::post('/security/backup/gdrive-config', [\App\Http\Controllers\SecurityController::class, 'configureGdrive'])->name('security.backup.gdrive-config');
+    Route::post('/security/backup/gdrive-test', [\App\Http\Controllers\SecurityController::class, 'testGdrive'])->name('security.backup.gdrive-test');
 
     // Sesi Aktif
     Route::get('/security/sessions', [\App\Http\Controllers\SecurityController::class, 'sessions'])->name('security.sessions');

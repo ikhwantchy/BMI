@@ -20,7 +20,7 @@
 <div class="flex h-full" x-data="{
     sidebarOpen: true,
     profileModal: false,
-    activeCategory: '{{ request()->routeIs('members.*', 'businesses.*', 'visits.*', 'evaluations.*', 'coaching.*') ? 'operasional' : (request()->routeIs('reports.*') ? 'pelaporan' : (request()->routeIs('users.*', 'branches.*', 'master.*', 'import.*') ? 'sistem' : (request()->routeIs('audit.*') ? 'keamanan' : 'operasional'))) }}'
+    activeCategory: '{{ request()->routeIs('members.*', 'businesses.*', 'visits.*', 'evaluations.*', 'coaching.*') ? 'operasional' : (request()->routeIs('reports.*') ? 'pelaporan' : (request()->routeIs('users.*', 'branches.*', 'master.*', 'import.*') ? 'sistem' : (request()->routeIs('audit.*', 'security.*') ? 'keamanan' : 'operasional'))) }}'
 }">
 
     {{-- ── Mobile overlay ──────────────────────────────────────────────────── --}}
@@ -156,7 +156,7 @@
                             [
                                 'route' => 'security.backup',
                                 'label' => 'Cadangan Data',
-                                'roles' => ['system_admin','pengurus'],
+                                'roles' => ['system_admin','pengurus','manajer'],
                             ],
                             [
                                 'route' => 'security.sessions',
@@ -189,7 +189,7 @@
                                     <span class="truncate">{{ $group['label'] }}</span>
                                 </div>
                                 <svg class="w-4 h-4 shrink-0 transform text-white/70 {{ $isGroupActive ? 'rotate-90' : '' }}"
-                                     :class="activeCategory === '{{ $groupKey }}' ? 'rotate-90' : ''"
+                                     :class="{ 'rotate-90': activeCategory === '{{ $groupKey }}', 'rotate-0': activeCategory !== '{{ $groupKey }}' }"
                                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                                 </svg>

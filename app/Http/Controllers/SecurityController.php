@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Branch;
 use App\Services\AuditService;
+use App\Services\GoogleDriveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,8 +29,8 @@ class SecurityController extends Controller
         $user = Auth::user();
         if (!$user) abort(401);
 
-        if (!$user->hasAnyRole(['system_admin', 'pengurus'])) {
-            abort(403, 'Hanya System Admin dan Pengurus yang dapat mengakses fitur ini.');
+        if (!$user->hasAnyRole(['system_admin', 'pengurus', 'manajer'])) {
+            abort(403, 'Hanya System Admin, Pengurus, dan Manajer yang dapat mengakses fitur ini.');
         }
     }
 
@@ -117,22 +118,27 @@ class SecurityController extends Controller
 
     // ─── Backup Database ───────────────────────────────────────────────────────
 
-    public function backup(Request $request)
+    public function backup(Request $request, GoogleDriveService $gdrive)
     {
         $this->authorizeAdmin();
 
-        // List existing backups
         $backupPath = storage_path('app/backups');
         $backups = [];
 
         if (is_dir($backupPath)) {
-            $files = glob($backupPath . '/*.sql');
+            // Find all backup formats: .sql, .sqlite, .gz
+            $files = glob($backupPath . '/*');
             foreach ($files as $file) {
-                $backups[] = [
-                    'filename'   => basename($file),
-                    'size'       => filesize($file),
-                    'created_at' => \Carbon\Carbon::createFromTimestamp(filemtime($file)),
-                ];
+                if (is_file($file)) {
+                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                    if (in_array($ext, ['sql', 'sqlite', 'gz'])) {
+                        $backups[] = [
+                            'filename'   => basename($file),
+                            'size'       => filesize($file),
+                            'created_at' => \Carbon\Carbon::createFromTimestamp(filemtime($file)),
+                        ];
+                    }
+                }
             }
             // Sort newest first
             usort($backups, fn($a, $b) => $b['created_at']->timestamp - $a['created_at']->timestamp);
@@ -153,7 +159,15 @@ class SecurityController extends Controller
 
         $storageOk = is_writable(storage_path('app'));
 
-        return view('security.backup', compact('backups', 'dbConfig', 'dbOk', 'storageOk'));
+        // Google Drive integration
+        $gdriveConfigured = $gdrive->isConfigured();
+        $gdriveInfo       = $gdrive->getConfigInfo();
+        $gdriveFiles      = $gdriveConfigured ? $gdrive->listDriveFiles(10) : [];
+
+        return view('security.backup', compact(
+            'backups', 'dbConfig', 'dbOk', 'storageOk',
+            'gdriveConfigured', 'gdriveInfo', 'gdriveFiles'
+        ));
     }
 
     public function createBackup(Request $request)
@@ -165,40 +179,48 @@ class SecurityController extends Controller
             mkdir($backupPath, 0755, true);
         }
 
-        $dbDriver = config('database.default');
+        $dbDriver  = config('database.default');
+        $timestamp = now()->format('Ymd_His');
 
-        if ($dbDriver !== 'mysql' && $dbDriver !== 'mariadb') {
-            return back()->with('error', 'Backup otomatis hanya mendukung MySQL/MariaDB. Gunakan tools lain untuk SQLite/PostgreSQL.');
+        if ($dbDriver === 'sqlite') {
+            $source = config('database.connections.sqlite.database');
+            $filename = "backup_kopsyah_sqlite_{$timestamp}.sqlite";
+            $outputPath = $backupPath . DIRECTORY_SEPARATOR . $filename;
+
+            if (!file_exists($source)) {
+                return back()->with('error', "Database SQLite tidak ditemukan di: {$source}");
+            }
+            copy($source, $outputPath);
+        } elseif ($dbDriver === 'mysql' || $dbDriver === 'mariadb') {
+            $dbHost     = config("database.connections.{$dbDriver}.host", '127.0.0.1');
+            $dbPort     = config("database.connections.{$dbDriver}.port", 3306);
+            $dbName     = config("database.connections.{$dbDriver}.database");
+            $dbUser     = config("database.connections.{$dbDriver}.username");
+            $dbPassword = config("database.connections.{$dbDriver}.password");
+
+            $filename   = "backup_kopsyah_{$timestamp}.sql";
+            $outputPath = $backupPath . DIRECTORY_SEPARATOR . $filename;
+
+            $command = sprintf(
+                'mysqldump --host=%s --port=%s --user=%s --password=%s --single-transaction --quick --lock-tables=false %s > %s 2>&1',
+                escapeshellarg($dbHost),
+                escapeshellarg($dbPort),
+                escapeshellarg($dbUser),
+                escapeshellarg($dbPassword),
+                escapeshellarg($dbName),
+                escapeshellarg($outputPath)
+            );
+
+            exec($command, $output, $returnCode);
+
+            if ($returnCode !== 0 || !file_exists($outputPath) || filesize($outputPath) < 50) {
+                if (file_exists($outputPath)) unlink($outputPath);
+                return back()->with('error', 'Backup gagal. Pastikan mysqldump tersedia di server. Output: ' . implode(' ', $output));
+            }
+        } else {
+            return back()->with('error', "Driver database {$dbDriver} belum didukung.");
         }
 
-        $dbHost     = config("database.connections.{$dbDriver}.host", '127.0.0.1');
-        $dbPort     = config("database.connections.{$dbDriver}.port", 3306);
-        $dbName     = config("database.connections.{$dbDriver}.database");
-        $dbUser     = config("database.connections.{$dbDriver}.username");
-        $dbPassword = config("database.connections.{$dbDriver}.password");
-
-        $filename   = 'backup_kopsyah_' . now()->format('Ymd_His') . '.sql';
-        $outputPath = $backupPath . DIRECTORY_SEPARATOR . $filename;
-
-        $command = sprintf(
-            'mysqldump --host=%s --port=%s --user=%s --password=%s --single-transaction --quick --lock-tables=false %s > %s 2>&1',
-            escapeshellarg($dbHost),
-            escapeshellarg($dbPort),
-            escapeshellarg($dbUser),
-            escapeshellarg($dbPassword),
-            escapeshellarg($dbName),
-            escapeshellarg($outputPath)
-        );
-
-        exec($command, $output, $returnCode);
-
-        if ($returnCode !== 0 || !file_exists($outputPath) || filesize($outputPath) < 100) {
-            // Remove broken file if any
-            if (file_exists($outputPath)) unlink($outputPath);
-            return back()->with('error', 'Backup gagal. Pastikan mysqldump tersedia di server. Output: ' . implode(' ', $output));
-        }
-
-        // Log the backup action
         app(AuditService::class)->log('create', 'BackupFile', null, [], [], "Backup database dibuat: {$filename}");
 
         return back()->with('success', "Backup berhasil dibuat: {$filename} (" . number_format(filesize($outputPath) / 1024, 1) . " KB)");
@@ -208,15 +230,21 @@ class SecurityController extends Controller
     {
         $this->authorizeAdmin();
 
-        // Sanitize filename — no directory traversal
+        // Sanitize filename — strictly basename and check valid extensions
         $filename   = basename($filename);
         $backupPath = storage_path('app/backups/' . $filename);
 
-        if (!file_exists($backupPath) || !str_ends_with($filename, '.sql')) {
-            abort(404, 'File backup tidak ditemukan.');
+        $allowedExts = ['sql', 'sqlite', 'gz', 'zip'];
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (!in_array($ext, $allowedExts) || !file_exists($backupPath)) {
+            return back()->with('error', "File backup '{$filename}' tidak ditemukan di server.");
         }
 
-        return response()->download($backupPath);
+        return response()->download($backupPath, $filename, [
+            'Content-Type'        => 'application/octet-stream',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
     }
 
     public function deleteBackup(string $filename)
@@ -226,8 +254,11 @@ class SecurityController extends Controller
         $filename   = basename($filename);
         $backupPath = storage_path('app/backups/' . $filename);
 
-        if (!file_exists($backupPath) || !str_ends_with($filename, '.sql')) {
-            abort(404, 'File backup tidak ditemukan.');
+        $allowedExts = ['sql', 'sqlite', 'gz', 'zip'];
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (!in_array($ext, $allowedExts) || !file_exists($backupPath)) {
+            return back()->with('error', "File backup '{$filename}' tidak ditemukan.");
         }
 
         unlink($backupPath);
@@ -235,6 +266,149 @@ class SecurityController extends Controller
         app(AuditService::class)->log('delete', 'BackupFile', null, [], [], "File backup dihapus: {$filename}");
 
         return back()->with('success', "File backup {$filename} berhasil dihapus.");
+    }
+
+    public function backupToGdrive(Request $request, GoogleDriveService $gdrive)
+    {
+        $this->authorizeAdmin();
+
+        if (!$gdrive->isConfigured()) {
+            return back()->with('error', 'Google Drive belum dikonfigurasi. Silakan lengkapi pengaturan Google Drive di bawah.');
+        }
+
+        // 1. Create local backup first
+        $backupPath = storage_path('app/backups');
+        if (!is_dir($backupPath)) {
+            mkdir($backupPath, 0755, true);
+        }
+
+        $dbDriver  = config('database.default');
+        $timestamp = now()->format('Ymd_His');
+
+        if ($dbDriver === 'sqlite') {
+            $source = config('database.connections.sqlite.database');
+            $filename = "backup_kopsyah_sqlite_{$timestamp}.sqlite";
+            $outputPath = $backupPath . DIRECTORY_SEPARATOR . $filename;
+            if (!file_exists($source)) {
+                return back()->with('error', "Database SQLite tidak ditemukan di: {$source}");
+            }
+            copy($source, $outputPath);
+        } elseif ($dbDriver === 'mysql' || $dbDriver === 'mariadb') {
+            $dbHost     = config("database.connections.{$dbDriver}.host", '127.0.0.1');
+            $dbPort     = config("database.connections.{$dbDriver}.port", 3306);
+            $dbName     = config("database.connections.{$dbDriver}.database");
+            $dbUser     = config("database.connections.{$dbDriver}.username");
+            $dbPassword = config("database.connections.{$dbDriver}.password");
+
+            $filename   = "backup_kopsyah_{$timestamp}.sql";
+            $outputPath = $backupPath . DIRECTORY_SEPARATOR . $filename;
+
+            $command = sprintf(
+                'mysqldump --host=%s --port=%s --user=%s --password=%s --single-transaction --quick --lock-tables=false %s > %s 2>&1',
+                escapeshellarg($dbHost),
+                escapeshellarg($dbPort),
+                escapeshellarg($dbUser),
+                escapeshellarg($dbPassword),
+                escapeshellarg($dbName),
+                escapeshellarg($outputPath)
+            );
+
+            exec($command, $output, $returnCode);
+
+            if ($returnCode !== 0 || !file_exists($outputPath) || filesize($outputPath) < 50) {
+                if (file_exists($outputPath)) unlink($outputPath);
+                return back()->with('error', 'Gagal membuat dump database: ' . implode(' ', $output));
+            }
+        } else {
+            return back()->with('error', "Driver database {$dbDriver} belum didukung.");
+        }
+
+        // 2. Upload to Google Drive
+        $uploadResult = $gdrive->uploadFile($outputPath, $filename);
+
+        if ($uploadResult['success']) {
+            app(AuditService::class)->log('create', 'BackupFile', null, [], [], "Backup berhasil diunggah ke Google Drive: {$filename} (ID: {$uploadResult['file_id']})");
+            return back()->with('success', "✅ Backup database berhasil dibuat dan diunggah ke Google Drive! ({$filename}, " . number_format(filesize($outputPath) / 1024, 1) . " KB)");
+        }
+
+        return back()->with('warning', "Backup lokal berhasil dibuat ({$filename}), namun gagal upload ke Google Drive: " . $uploadResult['message']);
+    }
+
+    public function uploadToGdrive(string $filename, Request $request, GoogleDriveService $gdrive)
+    {
+        $this->authorizeAdmin();
+
+        if (!$gdrive->isConfigured()) {
+            return back()->with('error', 'Google Drive belum dikonfigurasi. Atur kredensial terlebih dahulu.');
+        }
+
+        $filename   = basename($filename);
+        $backupPath = storage_path('app/backups/' . $filename);
+
+        if (!file_exists($backupPath)) {
+            return back()->with('error', "File '{$filename}' tidak ditemukan di penyimpanan lokal.");
+        }
+
+        $result = $gdrive->uploadFile($backupPath, $filename);
+
+        if ($result['success']) {
+            app(AuditService::class)->log('create', 'BackupFile', null, [], [], "File backup diunggah ke Google Drive: {$filename}");
+            return back()->with('success', "✅ File {$filename} berhasil diunggah ke Google Drive!");
+        }
+
+        return back()->with('error', "Gagal mengunggah ke Google Drive: " . $result['message']);
+    }
+
+    public function configureGdrive(Request $request, GoogleDriveService $gdrive)
+    {
+        $this->authorizeAdmin();
+
+        $request->validate([
+            'folder_id'            => 'required|string|max:255',
+            'service_account_file' => 'nullable|file|mimes:json,txt|max:2048',
+            'service_account_json' => 'nullable|string',
+        ]);
+
+        $folderId = trim($request->input('folder_id'));
+        $jsonContent = null;
+
+        if ($request->hasFile('service_account_file')) {
+            $jsonContent = file_get_contents($request->file('service_account_file')->getRealPath());
+        } elseif ($request->filled('service_account_json')) {
+            $jsonContent = trim($request->input('service_account_json'));
+        }
+
+        try {
+            if ($jsonContent) {
+                $gdrive->saveCredentials($jsonContent, $folderId);
+            } else {
+                // If only folder_id is updated
+                $gdrive->saveCredentials(file_get_contents(storage_path('app/credentials/google-drive-service-account.json')), $folderId);
+            }
+
+            app(AuditService::class)->log('update', 'GoogleDriveConfig', null, [], [], 'Konfigurasi Google Drive Backup diperbarui');
+
+            return back()->with('success', 'Konfigurasi Google Drive berhasil disimpan!');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal menyimpan konfigurasi: ' . $e->getMessage());
+        }
+    }
+
+    public function testGdrive(GoogleDriveService $gdrive)
+    {
+        $this->authorizeAdmin();
+
+        if (!$gdrive->isConfigured()) {
+            return back()->with('error', 'Google Drive belum dikonfigurasi lengkap (JSON key atau Folder ID belum ada).');
+        }
+
+        $test = $gdrive->testConnection();
+
+        if ($test['success']) {
+            return back()->with('success', "✅ {$test['message']} (Nama Folder: {$test['folder_name']})");
+        }
+
+        return back()->with('error', "❌ {$test['message']}");
     }
 
     // ─── Sesi Aktif ────────────────────────────────────────────────────────────
