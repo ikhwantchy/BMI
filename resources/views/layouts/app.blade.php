@@ -252,10 +252,16 @@
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {{-- Top bar --}}
-        <header class="flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-200 shrink-0 shadow-xs">
-            <div class="flex items-center gap-3">
-                <div>
-                    <h1 class="text-base font-bold text-gray-800 tracking-tight">@yield('page-title', 'Sistem Evaluasi Usaha')</h1>
+        <header class="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-white border-b border-gray-200 shrink-0 shadow-xs gap-2">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <button type="button" @click="sidebarOpen = true"
+                        class="lg:hidden p-1.5 -ml-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors cursor-pointer shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <div class="truncate">
+                    <h1 class="text-base font-bold text-gray-800 tracking-tight truncate">@yield('page-title', 'Sistem Evaluasi Usaha')</h1>
                 </div>
             </div>
 
@@ -273,27 +279,29 @@
                 } catch (\Throwable $e) {}
             @endphp
 
-            <div class="flex items-center gap-3 text-xs">
+            <div class="flex items-center gap-2 sm:gap-3 text-xs shrink-0">
                 @if($waitingValidationCount > 0)
                     <a href="{{ route('evaluations.index', ['status' => 'waiting_validation']) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-300 text-amber-800 font-semibold text-xs rounded-full hover:bg-amber-100 transition-colors"
+                       class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-amber-50 border border-amber-300 text-amber-800 font-semibold text-xs rounded-full hover:bg-amber-100 transition-colors shrink-0"
                        title="{{ $waitingValidationCount }} Evaluasi menunggu validasi">
-                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                        <span>{{ $waitingValidationCount }} Perlu Validasi</span>
+                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+                        <span class="hidden sm:inline">{{ $waitingValidationCount }} Perlu Validasi</span>
+                        <span class="sm:hidden">{{ $waitingValidationCount }} Validasi</span>
                     </a>
                 @endif
 
                 @if($needsRevisionCount > 0)
                     <a href="{{ route('evaluations.index', ['status' => 'needs_revision']) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 border border-orange-300 text-orange-800 font-semibold text-xs rounded-full hover:bg-orange-100 transition-colors"
+                       class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-orange-50 border border-orange-300 text-orange-800 font-semibold text-xs rounded-full hover:bg-orange-100 transition-colors shrink-0"
                        title="{{ $needsRevisionCount }} Evaluasi perlu direvisi">
-                        <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                        <span>{{ $needsRevisionCount }} Perlu Revisi</span>
+                        <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse shrink-0"></span>
+                        <span class="hidden sm:inline">{{ $needsRevisionCount }} Perlu Revisi</span>
+                        <span class="sm:hidden">{{ $needsRevisionCount }} Revisi</span>
                     </a>
                 @endif
 
                 {{-- User Profile & Dropdown (Top Right - Avatar Icon Button) --}}
-                <div class="relative ml-2" x-data="{ profileDropdown: false }" @click.outside="profileDropdown = false">
+                <div class="relative ml-1 sm:ml-2 shrink-0" x-data="{ profileDropdown: false }" @click.outside="profileDropdown = false">
                     <button type="button"
                             @click="profileDropdown = !profileDropdown"
                             class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center shrink-0 transition-colors cursor-pointer focus:outline-none"
