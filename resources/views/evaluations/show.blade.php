@@ -88,7 +88,8 @@
 
             {{-- Action Forms based on Status --}}
             <div class="flex items-center space-x-2">
-                @if($evaluation->isDraft())
+                @if($evaluation->isEditable())
+                    @can('update', $evaluation)
                     <form action="{{ route('evaluations.calculate', $evaluation) }}" method="POST">
                         @csrf
                         <button type="submit" class="btn-secondary py-1 text-xs">
@@ -98,16 +99,17 @@
                     <form action="{{ route('evaluations.submit', $evaluation) }}" method="POST" onsubmit="return confirm('Ajukan evaluasi ini ke Manajer untuk divalidasi?')">
                         @csrf
                         <button type="submit" class="btn-primary py-1 text-xs">
-                            Ajukan Validasi
+                            @if($evaluation->isNeedsRevision()) Ajukan Ulang Setelah Revisi @else Ajukan Validasi @endif
                         </button>
                     </form>
+                    @endcan
                 @endif
             </div>
         </div>
     </div>
 
     {{-- Validation Action Box for Managers if Waiting Validation --}}
-    @if($evaluation->status->value === 'waiting_validation' && auth()->user()->canValidate())
+    @can('approve', $evaluation)
         <div class="bg-amber-50 border border-amber-200 p-6 space-y-4">
             <div class="flex items-start justify-between">
                 <div>
@@ -138,6 +140,17 @@
                         </button>
                     </form>
 
+                    @can('revise', $evaluation)
+                    <form action="{{ route('evaluations.revise', $evaluation) }}" method="POST"
+                          onsubmit="if(!validatorNotes.trim()){ alert('Mohon isi catatan revisi terlebih dahulu.'); return false; } return confirm('Kembalikan evaluasi ini ke petugas untuk direvisi?')">
+                        @csrf
+                        <input type="hidden" name="validator_notes" :value="validatorNotes">
+                        <button type="submit" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold transition">
+                            Minta Revisi
+                        </button>
+                    </form>
+                    @endcan
+
                     <form action="{{ route('evaluations.validate', $evaluation) }}" method="POST"
                           onsubmit="return confirm('Validasi dan setujui evaluasi ini?')">
                         @csrf
@@ -149,15 +162,23 @@
                 </div>
             </div>
         </div>
-    @endif
+    @endcan
 
-    {{-- Validator Notes Display if Validated or Rejected --}}
+    {{-- Validator Notes Display --}}
     @if($evaluation->validator_notes)
-        <div class="p-4 border {{ $evaluation->status->value === 'validated' ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200' }}">
-            <span class="text-xs font-semibold uppercase tracking-wider {{ $evaluation->status->value === 'validated' ? 'text-emerald-800' : 'text-red-800' }}">
-                Catatan Manajer ({{ $evaluation->validatedBy?->name }}):
+        @php
+            $noteColor = match($evaluation->status) {
+                \App\Enums\EvaluationStatus::Validated    => ['bg' => 'bg-emerald-50', 'border' => 'border-emerald-200', 'text' => 'text-emerald-800', 'body' => 'text-emerald-950'],
+                \App\Enums\EvaluationStatus::NeedsRevision => ['bg' => 'bg-orange-50', 'border' => 'border-orange-200', 'text' => 'text-orange-800', 'body' => 'text-orange-950'],
+                default                                   => ['bg' => 'bg-red-50', 'border' => 'border-red-200', 'text' => 'text-red-800', 'body' => 'text-red-950'],
+            };
+        @endphp
+        <div class="p-4 border {{ $noteColor['bg'] }} {{ $noteColor['border'] }}">
+            <span class="text-xs font-semibold uppercase tracking-wider {{ $noteColor['text'] }}">
+                {{ $evaluation->status === \App\Enums\EvaluationStatus::NeedsRevision ? 'Catatan Revisi' : 'Catatan Manajer' }}
+                ({{ $evaluation->validatedBy?->name }}):
             </span>
-            <p class="text-xs mt-1 {{ $evaluation->status->value === 'validated' ? 'text-emerald-950' : 'text-red-950' }} leading-relaxed">
+            <p class="text-xs mt-1 {{ $noteColor['body'] }} leading-relaxed">
                 {{ $evaluation->validator_notes }}
             </p>
         </div>

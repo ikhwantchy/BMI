@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/evaluations/{evaluation}/submit', [EvaluationController::class, 'submit'])->name('evaluations.submit');
     Route::post('/evaluations/{evaluation}/validate', [EvaluationController::class, 'validate'])->name('evaluations.validate');
     Route::post('/evaluations/{evaluation}/reject', [EvaluationController::class, 'reject'])->name('evaluations.reject');
+    Route::post('/evaluations/{evaluation}/revise', [EvaluationController::class, 'revise'])->name('evaluations.revise');
 
     // Coaching / Tindak Lanjut Pembinaan
     Route::get('/coaching', [CoachingController::class, 'index'])->name('coaching.index');

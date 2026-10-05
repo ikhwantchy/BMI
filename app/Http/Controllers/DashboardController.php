@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EvaluationStatus;
 use App\Models\Evaluation;
 use App\Models\Member;
 use App\Models\Visit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -14,7 +16,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->isManager() || $user->isAssistantManager()) {
+        if ($user->hasAnyRole(['manajer', 'asisten_manajer', 'system_admin'])) {
             return $this->managerDashboard();
         }
 
@@ -36,33 +38,51 @@ class DashboardController extends Controller
         $totalMembers = Member::active()->count();
 
         $incompleteEvaluations = Evaluation::whereHas('visit', fn($q) => $q->where('officer_id', $user->id))
-            ->where('status', 'draft')
+            ->whereIn('status', [EvaluationStatus::Draft->value, EvaluationStatus::NeedsRevision->value])
+            ->count();
+
+        $needsRevisionCount = Evaluation::whereHas('visit', fn($q) => $q->where('officer_id', $user->id))
+            ->where('status', EvaluationStatus::NeedsRevision->value)
             ->count();
 
         return view('dashboard.officer', compact(
             'todayVisits',
             'pendingVisits',
             'totalMembers',
-            'incompleteEvaluations'
+            'incompleteEvaluations',
+            'needsRevisionCount',
         ));
     }
 
     private function managerDashboard(): View
     {
-        $totalMembers = Member::count();
+        $totalMembers    = Member::count();
         $totalBusinesses = \App\Models\Business::where('status', 'active')->count();
 
         $evaluationStats = Evaluation::selectRaw('recommendation, COUNT(*) as count')
-            ->where('status', 'validated')
+            ->where('status', EvaluationStatus::Validated->value)
             ->groupBy('recommendation')
             ->pluck('count', 'recommendation')
             ->toArray();
 
         $pendingValidations = Evaluation::waitingValidation()->count();
 
+        $needsRevisionCount = Evaluation::where('status', EvaluationStatus::NeedsRevision->value)->count();
+
         $recentEvaluations = Evaluation::with(['business.member', 'submittedBy'])
             ->latest()
             ->take(10)
+            ->get();
+
+        // Trend evaluasi per bulan — MySQL compatible (DATE_FORMAT, bukan strftime)
+        $monthlyTrend = Evaluation::selectRaw(
+                "DATE_FORMAT(created_at, '%Y-%m') as month,
+                 COUNT(*) as total,
+                 AVG(total_score) as avg_score"
+            )
+            ->where('created_at', '>=', now()->subYear())
+            ->groupBy('month')
+            ->orderBy('month')
             ->get();
 
         return view('dashboard.manager', compact(
@@ -70,7 +90,9 @@ class DashboardController extends Controller
             'totalBusinesses',
             'evaluationStats',
             'pendingValidations',
-            'recentEvaluations'
+            'needsRevisionCount',
+            'recentEvaluations',
+            'monthlyTrend',
         ));
     }
 }

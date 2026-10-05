@@ -101,9 +101,34 @@ class Evaluation extends Model
         return $this->status === EvaluationStatus::Draft;
     }
 
+    public function isEditable(): bool
+    {
+        return $this->status->isEditable();
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->status->isFinal();
+    }
+
     public function isValidated(): bool
     {
         return $this->status === EvaluationStatus::Validated;
+    }
+
+    public function isWaitingValidation(): bool
+    {
+        return $this->status === EvaluationStatus::WaitingValidation;
+    }
+
+    public function isNeedsRevision(): bool
+    {
+        return $this->status === EvaluationStatus::NeedsRevision;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === EvaluationStatus::Rejected;
     }
 
     public function getFinalScoreAttribute(): float

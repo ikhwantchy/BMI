@@ -7,38 +7,36 @@ use App\Models\User;
 
 class MemberPolicy
 {
-    /**
-     * Semua user yang terautentikasi boleh melihat daftar anggota.
-     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->hasRole('system_admin')) {
+            return true;
+        }
+        return null;
+    }
+
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['petugas_lapangan', 'asisten_manajer', 'manajer']);
+        return $user->hasPermissionTo('members.view');
     }
 
     public function view(User $user, Member $member): bool
     {
-        return $this->viewAny($user);
+        return $user->hasPermissionTo('members.view');
     }
 
-    /**
-     * Hanya petugas lapangan dan ke atas yang bisa membuat anggota baru.
-     */
     public function create(User $user): bool
     {
-        return in_array($user->role, ['petugas_lapangan', 'asisten_manajer', 'manajer']);
+        return $user->hasPermissionTo('members.create');
     }
 
     public function update(User $user, Member $member): bool
     {
-        return in_array($user->role, ['petugas_lapangan', 'asisten_manajer', 'manajer']);
+        return $user->hasPermissionTo('members.update');
     }
 
-    /**
-     * Hanya manajer yang bisa menghapus anggota.
-     * OPEN ITEM: detail permission antar level management belum final.
-     */
     public function delete(User $user, Member $member): bool
     {
-        return $user->isManager();
+        return $user->hasPermissionTo('members.delete');
     }
 }

@@ -22,10 +22,12 @@ class EvaluationController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Evaluation::class);
+
         $evaluations = Evaluation::with(['business.member', 'submittedBy'])
             ->when($request->status, fn($q, $s) => $q->where('status', $s))
             ->when($request->recommendation, fn($q, $r) => $q->where('recommendation', $r))
-            ->when($request->user()->isOfficer(), fn($q) =>
+            ->when($request->user()->hasRole('petugas_lapangan'), fn($q) =>
                 $q->whereHas('visit', fn($vq) => $vq->where('officer_id', $request->user()->id))
             )
             ->latest()
@@ -37,6 +39,8 @@ class EvaluationController extends Controller
 
     public function create(Visit $visit)
     {
+        $this->authorize('create', Evaluation::class);
+
         abort_if($visit->evaluation()->exists(), 422, 'Evaluasi untuk kunjungan ini sudah ada.');
         abort_if($visit->status !== VisitStatus::Completed, 422, 'Kunjungan harus diselesaikan sebelum membuat evaluasi.');
 
@@ -47,12 +51,14 @@ class EvaluationController extends Controller
 
     public function store(Request $request, Visit $visit)
     {
+        $this->authorize('create', Evaluation::class);
+
         abort_if($visit->evaluation()->exists(), 422, 'Evaluasi sudah ada.');
 
         $request->validate([
-            'scores'              => ['required', 'array'],
-            'scores.*'            => ['required', 'numeric', 'min:0', 'max:100'],
-            'notes.*'             => ['nullable', 'string', 'max:500'],
+            'scores'   => ['required', 'array'],
+            'scores.*' => ['required', 'numeric', 'min:0', 'max:100'],
+            'notes.*'  => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::transaction(function () use ($request, $visit) {
@@ -60,6 +66,7 @@ class EvaluationController extends Controller
                 'visit_id'    => $visit->id,
                 'business_id' => $visit->business_id,
                 'status'      => EvaluationStatus::Draft,
+                'branch_id'   => auth()->user()->branch_id,
             ]);
 
             foreach ($request->scores as $parameterId => $score) {
@@ -81,6 +88,8 @@ class EvaluationController extends Controller
 
     public function show(Evaluation $evaluation)
     {
+        $this->authorize('view', $evaluation);
+
         $evaluation->load([
             'visit.business.member',
             'details.parameter',
@@ -94,7 +103,9 @@ class EvaluationController extends Controller
 
     public function calculate(Evaluation $evaluation)
     {
-        abort_unless($evaluation->isDraft(), 422, 'Hanya evaluasi draft yang dapat dihitung ulang.');
+        $this->authorize('update', $evaluation);
+
+        abort_unless($evaluation->isEditable(), 422, 'Hanya evaluasi draft atau perlu revisi yang dapat dihitung ulang.');
 
         $this->scoringService->applyScore($evaluation);
 
@@ -103,7 +114,7 @@ class EvaluationController extends Controller
 
     public function submit(Evaluation $evaluation)
     {
-        abort_unless($evaluation->isDraft(), 422, 'Evaluasi tidak dalam status draft.');
+        $this->authorize('submit', $evaluation);
 
         $evaluation->update([
             'status'       => EvaluationStatus::WaitingValidation,
@@ -118,8 +129,7 @@ class EvaluationController extends Controller
 
     public function validate(Request $request, Evaluation $evaluation)
     {
-        abort_unless(auth()->user()->canValidate(), 403, 'Tidak memiliki akses untuk validasi.');
-        abort_unless($evaluation->status === EvaluationStatus::WaitingValidation, 422, 'Evaluasi tidak dalam status menunggu validasi.');
+        $this->authorize('approve', $evaluation);
 
         $request->validate(['validator_notes' => ['nullable', 'string', 'max:1000']]);
 
@@ -137,8 +147,7 @@ class EvaluationController extends Controller
 
     public function reject(Request $request, Evaluation $evaluation)
     {
-        abort_unless(auth()->user()->canValidate(), 403, 'Tidak memiliki akses untuk menolak evaluasi.');
-        abort_unless($evaluation->status === EvaluationStatus::WaitingValidation, 422, 'Evaluasi tidak dalam status menunggu validasi.');
+        $this->authorize('reject', $evaluation);
 
         $request->validate(['validator_notes' => ['required', 'string', 'max:1000']]);
 
@@ -151,6 +160,30 @@ class EvaluationController extends Controller
 
         $this->auditService->logReject($evaluation);
 
-        return back()->with('success', 'Evaluasi ditolak. Petugas dapat memperbaiki dan mengajukan ulang.');
+        return back()->with('success', 'Evaluasi ditolak.');
+    }
+
+    /**
+     * Minta revisi — kirim balik ke petugas dengan catatan, status NeedsRevision.
+     */
+    public function revise(Request $request, Evaluation $evaluation)
+    {
+        $this->authorize('revise', $evaluation);
+
+        $request->validate(['validator_notes' => ['required', 'string', 'max:1000']]);
+
+        $evaluation->update([
+            'status'          => EvaluationStatus::NeedsRevision,
+            'validated_by'    => auth()->id(),
+            'validated_at'    => now(),
+            'validator_notes' => $request->validator_notes,
+        ]);
+
+        $this->auditService->log('revise', Evaluation::class, $evaluation->id, [], [
+            'validator_notes' => $request->validator_notes,
+            'status'          => EvaluationStatus::NeedsRevision->value,
+        ]);
+
+        return back()->with('success', 'Evaluasi dikembalikan ke petugas untuk direvisi.');
     }
 }
