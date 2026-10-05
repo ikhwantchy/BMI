@@ -162,16 +162,30 @@
                 
                 await new Promise(r => img.onload = r);
 
+                const maxDim = 1600;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+                canvas.width = width;
+                canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 
-                // Draw original image
-                ctx.drawImage(img, 0, 0);
+                // Draw original image resized
+                ctx.drawImage(img, 0, 0, width, height);
 
-                // Setup text sizes based on image dimensions
-                const fontSize = Math.max(24, Math.floor(img.width * 0.035));
+                // Setup text sizes based on new image dimensions
+                const fontSize = Math.max(20, Math.floor(width * 0.035));
                 const padding = fontSize;
                 const bgHeight = (fontSize * 2.5);
 
