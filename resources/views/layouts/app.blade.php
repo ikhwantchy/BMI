@@ -40,24 +40,28 @@
          class="fixed inset-0 z-20 bg-black/40 lg:hidden"></div>
 
     {{-- ── Sidebar ──────────────────────────────────────────────────────────── --}}
-    <aside x-show="sidebarOpen"
-           x-transition:enter="transition ease-out duration-200"
-           x-transition:enter-start="-translate-x-full"
-           x-transition:enter-end="translate-x-0"
-           x-transition:leave="transition ease-in duration-150"
-           x-transition:leave-start="translate-x-0"
-           x-transition:leave-end="-translate-x-full"
-           class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-[#008f45] border-r border-[#007437] shadow-lg lg:relative shrink-0">
+    <aside :class="sidebarOpen ? 'w-60 translate-x-0' : 'w-14 -translate-x-full lg:translate-x-0'"
+           class="fixed inset-y-0 left-0 z-30 flex flex-col bg-[#008f45] border-r border-[#007437] shadow-lg lg:relative shrink-0 transition-all duration-200 ease-in-out">
 
         {{-- Logo Brand --}}
-        <div class="px-5 py-4 border-b border-white/10 flex items-center">
-            <a href="{{ route('home') }}" class="flex items-center gap-3 transition-opacity hover:opacity-90" title="Koperasi Syariah BMI">
-                <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo Koperasi Syariah BMI" class="h-9 w-auto object-contain">
+        <div class="h-14 border-b border-white/10 flex items-center shrink-0 transition-all duration-200"
+             :class="sidebarOpen ? 'px-4 justify-start' : 'px-0 justify-center'">
+            <a href="{{ route('home') }}" class="flex items-center transition-opacity hover:opacity-90" title="Koperasi Syariah BMI">
+                <img x-show="sidebarOpen"
+                     src="{{ asset('images/logo-bmi-full.png') }}"
+                     alt="Logo Koperasi Syariah BMI"
+                     class="h-8 w-auto object-contain">
+                <img x-show="!sidebarOpen"
+                     src="{{ asset('images/logo-kopsyah-bmi-new.png') }}"
+                     alt="Logo Koperasi Syariah BMI"
+                     class="h-7 w-7 object-contain mx-auto"
+                     style="display: none;">
             </a>
         </div>
 
         {{-- Navigation --}}
-        <nav class="flex-1 px-3 py-3 space-y-1.5 overflow-y-auto">
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden transition-all duration-200"
+             :class="sidebarOpen ? 'px-2 py-2 space-y-0.5' : 'px-1.5 py-2 space-y-1.5'">
             @php
                 $userRole = auth()->user()->role;
 
@@ -72,31 +76,26 @@
                                 'route' => 'members.index',
                                 'label' => 'Anggota',
                                 'roles' => ['petugas_lapangan','asisten_manajer','manajer','pengurus','pengawas','system_admin'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>',
                             ],
                             [
                                 'route' => 'businesses.index',
                                 'label' => 'Usaha',
                                 'roles' => ['petugas_lapangan','asisten_manajer','manajer','pengurus','pengawas','system_admin'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
                             ],
                             [
                                 'route' => 'visits.index',
                                 'label' => 'Kunjungan',
                                 'roles' => ['petugas_lapangan','asisten_manajer','manajer','pengurus','pengawas','system_admin'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>',
                             ],
                             [
                                 'route' => 'evaluations.index',
                                 'label' => 'Evaluasi',
                                 'roles' => ['petugas_lapangan','asisten_manajer','manajer','pengurus','pengawas','system_admin'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>',
                             ],
                             [
                                 'route' => 'coaching.index',
                                 'label' => 'Pembinaan',
                                 'roles' => ['petugas_lapangan','asisten_manajer','manajer','pengurus','pengawas','system_admin'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>',
                             ],
                         ],
                     ],
@@ -109,13 +108,11 @@
                                 'route' => 'reports.index',
                                 'label' => 'Laporan',
                                 'roles' => ['asisten_manajer','manajer','pengurus','pengawas','system_admin'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>',
                             ],
                             [
                                 'route' => 'reports.analytics',
                                 'label' => 'Analitik Cabang',
                                 'roles' => ['asisten_manajer','manajer','pengurus','pengawas','system_admin'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>',
                             ],
                         ],
                     ],
@@ -128,25 +125,21 @@
                                 'route' => 'users.index',
                                 'label' => 'Pengguna',
                                 'roles' => ['system_admin','manajer','pengurus'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>',
                             ],
                             [
                                 'route' => 'branches.index',
                                 'label' => 'Cabang',
                                 'roles' => ['system_admin','pengurus','pengawas','manajer'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
                             ],
                             [
                                 'route' => 'master.index',
                                 'label' => 'Master Data',
                                 'roles' => ['system_admin','pengurus','manajer','pengawas'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>',
                             ],
                             [
                                 'route' => 'import.index',
                                 'label' => 'Impor Data',
                                 'roles' => ['system_admin','manajer','pengurus'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>',
                             ],
                         ],
                     ],
@@ -159,7 +152,6 @@
                                 'route' => 'audit.index',
                                 'label' => 'Jejak Audit',
                                 'roles' => ['manajer','pengurus','pengawas','system_admin'],
-                                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>',
                             ],
                         ],
                     ],
@@ -173,54 +165,75 @@
                     $isGroupActive = request()->routeIs(...$group['routes']);
                 @endphp
                 @if(count($visibleItems) > 0)
-                    <div class="space-y-1">
-                        {{-- Category Toggle Button (With Icon + Chevron) --}}
-                        <button type="button"
-                                @click="openCategories.{{ $groupKey }} = !openCategories.{{ $groupKey }}"
-                                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer text-white
-                                       {{ $isGroupActive ? 'bg-white/20 shadow-xs' : 'hover:bg-white/10' }}">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-4 h-4 shrink-0 text-white" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                    <div>
+                        {{-- Expanded Mode (Full Sidebar) --}}
+                        <div x-show="sidebarOpen" class="space-y-0.5">
+                            {{-- Category Toggle Button (Icon + Label + Chevron) --}}
+                            <button type="button"
+                                    @click="openCategories.{{ $groupKey }} = !openCategories.{{ $groupKey }}"
+                                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer text-white
+                                           {{ $isGroupActive ? 'bg-white/15 text-white font-semibold' : 'hover:bg-white/10 text-white/90' }}">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <svg class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                        {!! $group['icon'] !!}
+                                    </svg>
+                                    <span class="truncate">{{ $group['label'] }}</span>
+                                </div>
+                                <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-150 text-white/70"
+                                     :class="openCategories.{{ $groupKey }} ? 'rotate-90' : ''"
+                                     fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+
+                            {{-- Submenu Items (Text Only, Solid White Guide Line) --}}
+                            <div x-show="openCategories.{{ $groupKey }}"
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 class="mt-0.5 ml-4 pl-3 border-l-2 border-white space-y-0.5">
+                                @foreach($visibleItems as $item)
+                                    @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
+                                    <a href="{{ route($item['route']) }}"
+                                       class="block px-2 py-1 text-[13px] leading-snug rounded-md transition-colors text-white
+                                              {{ $isItemActive
+                                                  ? 'bg-white/20 font-semibold text-white'
+                                                  : 'hover:bg-white/10 text-white/85 font-normal' }}">
+                                        <span>{{ $item['label'] }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- Collapsed Mode (Rail Icon Only) --}}
+                        <div x-show="!sidebarOpen" style="display: none;" class="flex flex-col items-center">
+                            <button type="button"
+                                    @click="sidebarOpen = true; openCategories.{{ $groupKey }} = true"
+                                    title="{{ $group['label'] }}"
+                                    class="w-9 h-9 rounded-md flex items-center justify-center transition-colors cursor-pointer
+                                           {{ $isGroupActive ? 'bg-white/20 text-white shadow-xs' : 'text-white/80 hover:text-white hover:bg-white/10' }}">
+                                <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                     {!! $group['icon'] !!}
                                 </svg>
-                                <span class="text-white text-xs font-semibold tracking-wide">{{ $group['label'] }}</span>
-                            </div>
-                            <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 text-white/80"
-                                 :class="openCategories.{{ $groupKey }} ? 'rotate-90' : ''"
-                                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </button>
-
-                        {{-- Submenu Items (Text Only, Solid White Guide Line) --}}
-                        <div x-show="openCategories.{{ $groupKey }}"
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 -translate-y-1"
-                             x-transition:enter-end="opacity-100 translate-y-0"
-                             class="mt-1 ml-5 pl-3.5 border-l-2 border-white space-y-1">
-                            @foreach($visibleItems as $item)
-                                @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
-                                <a href="{{ route($item['route']) }}"
-                                   class="block px-3 py-1.5 text-xs rounded-lg transition-all text-white
-                                          {{ $isItemActive
-                                              ? 'bg-white/25 font-bold shadow-xs'
-                                              : 'hover:bg-white/10 text-white/90 font-medium' }}">
-                                    <span>{{ $item['label'] }}</span>
-                                </a>
-                            @endforeach
+                            </button>
                         </div>
                     </div>
+
+                    @if(!$loop->last)
+                        <div x-show="!sidebarOpen" style="display: none;" class="w-6 mx-auto my-1 border-b border-white/15"></div>
+                    @endif
                 @endif
             @endforeach
         </nav>
 
-        {{-- Collapse Sidebar (Single button at bottom left matching reference) --}}
-        <div class="p-3 border-t border-white/10 flex items-center justify-start">
+        {{-- Collapse / Expand Sidebar (Single button at bottom left matching reference) --}}
+        <div class="border-t border-white/10 flex items-center shrink-0 transition-all duration-200"
+             :class="sidebarOpen ? 'px-2.5 py-2 justify-start' : 'p-2 justify-center'">
             <button type="button"
-                    @click="sidebarOpen = false"
-                    class="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all cursor-pointer"
-                    title="Tutup sidebar">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                    @click="sidebarOpen = !sidebarOpen"
+                    class="p-1.5 text-white/75 hover:text-white hover:bg-white/10 rounded-md transition-colors cursor-pointer"
+                    :title="sidebarOpen ? 'Perkecil sidebar' : 'Perluas sidebar'">
+                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                     <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 4v16"/>
                 </svg>
