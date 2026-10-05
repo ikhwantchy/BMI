@@ -71,8 +71,19 @@
                     @enderror
                 </div>
 
+                {{-- Cloudflare Turnstile Widget --}}
+                <div class="pt-1 flex flex-col items-center justify-center">
+                    <div class="cf-turnstile"
+                         data-sitekey="{{ config('services.turnstile.key', '0x4AAAAAAFOAB8-_ECMbKB4G') }}"
+                         data-theme="light"
+                         data-size="normal"></div>
+                    @error('cf-turnstile-response')
+                        <p class="mt-1.5 text-xs text-red-600 text-center font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Submit Button --}}
-                <div class="pt-2">
+                <div class="pt-1">
                     <button type="submit"
                             id="login-btn"
                             class="w-full py-2.5 px-4 bg-[#009a4c] hover:bg-[#007d3e] text-white text-xs font-semibold uppercase tracking-wider transition-colors focus:outline-none focus:ring-1 focus:ring-[#009a4c] cursor-pointer">
@@ -81,6 +92,8 @@
                 </div>
             </form>
         </div>
+
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
         <p class="text-center text-xs text-gray-400 mt-6 tracking-wide">
             &copy; {{ date('Y') }} Koperasi Syariah BMI &bull; Solusi Pemberdayaan Umat

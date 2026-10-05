@@ -23,8 +23,9 @@ class LoginController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate([
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'username'              => ['required', 'string'],
+            'password'              => ['required', 'string'],
+            'cf-turnstile-response' => [new \App\Rules\Turnstile],
         ]);
 
         // Rate limiting: max 5 percobaan per menit
