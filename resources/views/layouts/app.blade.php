@@ -56,7 +56,7 @@
 
         {{-- Navigation --}}
         <nav class="flex-1 overflow-y-auto overflow-x-hidden transition-all duration-200"
-             :class="sidebarOpen ? 'px-2 py-2.5 space-y-1' : 'px-1.5 py-2 space-y-1.5'">
+             :class="sidebarOpen ? 'px-3 py-4 space-y-2' : 'px-2 py-3 space-y-3'">
             @php
                 $userRole = auth()->user()->role;
 
@@ -162,18 +162,18 @@
                 @if(count($visibleItems) > 0)
                     <div>
                         {{-- Expanded Mode (Full Sidebar) --}}
-                        <div x-show="sidebarOpen" class="space-y-1">
+                        <div x-show="sidebarOpen" class="space-y-1.5">
                             {{-- Category Toggle Button (Icon + Label + Chevron) --}}
                             <button type="button"
                                     @click="activeCategory = (activeCategory === '{{ $groupKey }}' ? null : '{{ $groupKey }}')"
-                                    class="w-full flex items-center justify-between px-2.5 py-2 rounded-none text-[13px] font-medium leading-relaxed transition-colors duration-150 cursor-pointer text-white border-l-[3px] border-transparent hover:bg-white/10 text-white/90">
-                                <div class="flex items-center gap-2.5 min-w-0">
-                                    <svg class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                    class="w-full flex items-center justify-between px-3 py-3 rounded-none text-sm font-semibold leading-relaxed transition-colors duration-150 cursor-pointer text-white border-l-4 border-transparent hover:bg-white/10 text-white/90">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <svg class="w-5 h-5 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                         {!! $group['icon'] !!}
                                     </svg>
                                     <span class="truncate">{{ $group['label'] }}</span>
                                 </div>
-                                <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 ease-in-out text-white/70"
+                                <svg class="w-4 h-4 shrink-0 transform transition-transform duration-200 ease-in-out text-white/70"
                                      :class="activeCategory === '{{ $groupKey }}' ? 'rotate-90' : ''"
                                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -188,14 +188,14 @@
                                  x-transition:leave="transition-opacity ease-in duration-100"
                                  x-transition:leave-start="opacity-100"
                                  x-transition:leave-end="opacity-0"
-                                 class="mt-1 ml-4 pl-3 border-l border-white/70 space-y-1">
+                                 class="mt-1.5 ml-4 pl-3.5 border-l border-white/70 space-y-1.5">
                                 @foreach($visibleItems as $item)
                                     @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
                                     <a href="{{ route($item['route']) }}"
-                                       class="block px-2.5 py-1.5 text-[13px] leading-relaxed rounded-none transition-colors duration-150 text-white border-l-[3px]
+                                       class="block px-3 py-2 text-sm leading-relaxed rounded-none transition-colors duration-150 text-white border-l-4
                                               {{ $isItemActive
                                                   ? 'bg-white/20 font-semibold text-white border-[#e4c85b]'
-                                                  : 'border-transparent hover:bg-white/10 text-white/85 font-normal' }}">
+                                                  : 'border-transparent hover:bg-white/10 text-white/85 font-medium' }}">
                                         <span>{{ $item['label'] }}</span>
                                     </a>
                                 @endforeach
@@ -207,9 +207,9 @@
                             <button type="button"
                                     @click="sidebarOpen = true; activeCategory = '{{ $groupKey }}'"
                                     title="{{ $group['label'] }}"
-                                    class="w-9 h-9 rounded-none flex items-center justify-center transition-colors duration-150 cursor-pointer border-l-[3px]
+                                    class="w-10 h-10 rounded-none flex items-center justify-center transition-colors duration-150 cursor-pointer border-l-4
                                            {{ $isGroupActive ? 'bg-white/20 text-white shadow-xs border-[#e4c85b]' : 'border-transparent text-white/80 hover:text-white hover:bg-white/10' }}">
-                                <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                     {!! $group['icon'] !!}
                                 </svg>
                             </button>
@@ -282,23 +282,15 @@
                     </a>
                 @endif
 
-                <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#e4c85b]/60 bg-[#fefce8] text-[#9c7c10] font-semibold text-xs">
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#e4c85b]"></span>
-                    BMI Syariah
-                </span>
-
-                {{-- User Profile & Dropdown (Top Right - Email only, No outline) --}}
+                {{-- User Profile & Dropdown (Top Right - Avatar Icon Button) --}}
                 <div class="relative ml-2" x-data="{ profileDropdown: false }" @click.outside="profileDropdown = false">
                     <button type="button"
                             @click="profileDropdown = !profileDropdown"
-                            class="flex items-center gap-2.5 text-gray-700 hover:text-gray-900 transition-colors cursor-pointer focus:outline-none py-1">
-                        <span class="text-xs font-medium text-gray-700 hover:text-gray-900 hidden sm:inline">{{ auth()->user()->email }}</span>
-                        {{-- Profile Icon Button matching reference --}}
-                        <div class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center shrink-0 transition-colors">
-                            <svg class="w-4 h-4 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
+                            class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center shrink-0 transition-colors cursor-pointer focus:outline-none"
+                            title="Akun Saya">
+                        <svg class="w-4 h-4 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                        </svg>
                     </button>
 
                     {{-- Dropdown Menu matching user image 3 --}}
