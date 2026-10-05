@@ -50,17 +50,10 @@
            class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-[#008f45] border-r border-[#007437] shadow-lg lg:relative shrink-0">
 
         {{-- Logo Brand --}}
-        <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+        <div class="px-5 py-4 border-b border-white/10 flex items-center">
             <a href="{{ route('home') }}" class="flex items-center gap-3 transition-opacity hover:opacity-90" title="Koperasi Syariah BMI">
                 <img src="{{ asset('images/logo-bmi-full.png') }}" alt="Logo Koperasi Syariah BMI" class="h-9 w-auto object-contain">
             </a>
-            <button @click="sidebarOpen = false"
-                    class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
-                    title="Tutup sidebar">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-                </svg>
-            </button>
         </div>
 
         {{-- Navigation --}}
@@ -181,12 +174,17 @@
                 @endphp
                 @if(count($visibleItems) > 0)
                     <div class="space-y-1">
-                        {{-- Category Toggle Button (No icon on category header, clean text + chevron) --}}
+                        {{-- Category Toggle Button (With Icon + Chevron) --}}
                         <button type="button"
                                 @click="openCategories.{{ $groupKey }} = !openCategories.{{ $groupKey }}"
                                 class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer text-white
                                        {{ $isGroupActive ? 'bg-white/20 shadow-xs' : 'hover:bg-white/10' }}">
-                            <span class="text-white text-xs font-semibold tracking-wide">{{ $group['label'] }}</span>
+                            <div class="flex items-center gap-3">
+                                <svg class="w-4 h-4 shrink-0 text-white" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                    {!! $group['icon'] !!}
+                                </svg>
+                                <span class="text-white text-xs font-semibold tracking-wide">{{ $group['label'] }}</span>
+                            </div>
                             <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 text-white/80"
                                  :class="openCategories.{{ $groupKey }} ? 'rotate-90' : ''"
                                  fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -194,23 +192,20 @@
                             </svg>
                         </button>
 
-                        {{-- Submenu Items (With icon and indented guide line) --}}
+                        {{-- Submenu Items (Text Only, Solid White Guide Line) --}}
                         <div x-show="openCategories.{{ $groupKey }}"
                              x-transition:enter="transition ease-out duration-150"
                              x-transition:enter-start="opacity-0 -translate-y-1"
                              x-transition:enter-end="opacity-100 translate-y-0"
-                             class="mt-1 ml-4 pl-3.5 border-l-2 border-white/20 space-y-1">
+                             class="mt-1 ml-5 pl-3.5 border-l-2 border-white space-y-1">
                             @foreach($visibleItems as $item)
                                 @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
                                 <a href="{{ route($item['route']) }}"
-                                   class="flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg transition-all text-white
+                                   class="block px-3 py-1.5 text-xs rounded-lg transition-all text-white
                                           {{ $isItemActive
                                               ? 'bg-white/25 font-bold shadow-xs'
-                                              : 'hover:bg-white/10 text-white/90' }}">
-                                    <svg class="w-4 h-4 shrink-0 text-white" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                                        {!! $item['icon'] !!}
-                                    </svg>
-                                    <span class="text-white text-xs {{ $isItemActive ? 'font-bold' : 'font-medium' }}">{{ $item['label'] }}</span>
+                                              : 'hover:bg-white/10 text-white/90 font-medium' }}">
+                                    <span>{{ $item['label'] }}</span>
                                 </a>
                             @endforeach
                         </div>
@@ -219,19 +214,16 @@
             @endforeach
         </nav>
 
-        {{-- Collapse Sidebar (Full Screen Mode) --}}
-        <div class="p-3 border-t border-white/10">
+        {{-- Collapse Sidebar (Single button at bottom left matching reference) --}}
+        <div class="p-3 border-t border-white/10 flex items-center justify-start">
             <button type="button"
                     @click="sidebarOpen = false"
-                    class="flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all cursor-pointer"
-                    title="Tutup sidebar untuk mode layar penuh">
-                <div class="flex items-center gap-2.5">
-                    <svg class="w-4 h-4 shrink-0 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-                    </svg>
-                    <span>Layar Penuh</span>
-                </div>
-                <span class="text-[10px] font-mono px-2 py-0.5 bg-black/20 rounded-md text-emerald-200 font-bold">Tutup</span>
+                    class="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all cursor-pointer"
+                    title="Tutup sidebar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 4v16"/>
+                </svg>
             </button>
         </div>
     </aside>
@@ -245,8 +237,9 @@
                 <button @click="sidebarOpen = !sidebarOpen"
                         class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
                         :title="sidebarOpen ? 'Tutup sidebar (Layar Penuh)' : 'Buka sidebar'">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 4v16"/>
                     </svg>
                 </button>
                 <div>
@@ -319,13 +312,10 @@
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="absolute right-0 mt-2 w-64 rounded-2xl bg-white shadow-xl ring-1 ring-black/5 z-50 divide-y divide-gray-100 overflow-hidden"
                          style="display: none;">
-                        {{-- User Header with Email & Role --}}
+                        {{-- User Header with Email --}}
                         <div class="px-4 py-3 bg-gray-50/70">
                             <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
                             <p class="text-[11px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
-                            <span class="inline-block mt-2 px-2.5 py-0.5 text-[10px] font-bold uppercase font-mono tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
-                                {{ auth()->user()->roleLabel() }}
-                            </span>
                         </div>
 
                         {{-- Action: Lihat Profile --}}
