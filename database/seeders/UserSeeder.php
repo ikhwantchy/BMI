@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'name'      => 'Admin Manajer',
-                'username'  => 'manajer',
+                'username'  => 'admin',
                 'email'     => 'admin@bmi.sendr.web.id',
                 'password'  => Hash::make('@Bukan123'),
                 'role'      => 'manajer',
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name'      => 'Petugas Lapangan',
-                'username'  => 'budi',
+                'username'  => 'anggota01',
                 'email'     => 'anggota01@bmi.sendr.web.id',
                 'password'  => Hash::make('@Bukan123'),
                 'role'      => 'petugas_lapangan',
@@ -48,7 +48,7 @@ class UserSeeder extends Seeder
         foreach ($users as $userData) {
             $roleName = $userData['role'];
             $user = User::updateOrCreate(
-                ['username' => $userData['username']],
+                ['email' => $userData['email']],
                 $userData
             );
             
