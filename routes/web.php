@@ -10,9 +10,12 @@ use App\Http\Controllers\CoachingController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
-// ─── Root Landing Page ───────────────────────────────────────────────────────
+// ─── Root Route ───────────────────────────────────────────────────────────────
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) {
+        return redirect()->route('members.index');
+    }
+    return redirect()->route('login');
 })->name('home');
 
 // ─── Guest Routes ─────────────────────────────────────────────────────────────

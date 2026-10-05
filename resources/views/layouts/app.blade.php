@@ -171,34 +171,37 @@
                             {{-- Category Toggle Button (Icon + Label + Chevron) --}}
                             <button type="button"
                                     @click="openCategories.{{ $groupKey }} = !openCategories.{{ $groupKey }}"
-                                    class="w-full flex items-center justify-between px-2.5 py-2 rounded-md text-[13px] font-medium leading-relaxed transition-colors cursor-pointer text-white
-                                           {{ $isGroupActive ? 'bg-white/15 text-white font-semibold' : 'hover:bg-white/10 text-white/90' }}">
+                                    class="w-full flex items-center justify-between px-2.5 py-2 rounded-none text-[13px] font-medium leading-relaxed transition-colors cursor-pointer text-white border-l-[3px]
+                                           {{ $isGroupActive ? 'bg-white/15 text-white font-semibold border-[#e4c85b]' : 'border-transparent hover:bg-white/10 text-white/90' }}">
                                 <div class="flex items-center gap-2.5 min-w-0">
                                     <svg class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                         {!! $group['icon'] !!}
                                     </svg>
                                     <span class="truncate">{{ $group['label'] }}</span>
                                 </div>
-                                <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-150 text-white/70"
+                                <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 ease-in-out text-white/70"
                                      :class="openCategories.{{ $groupKey }} ? 'rotate-90' : ''"
                                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </button>
 
-                            {{-- Submenu Items (Text Only, Thin 1px White Guide Line) --}}
+                            {{-- Submenu Items (Text Only, Thin 1px White Guide Line, Smooth Up-Down) --}}
                             <div x-show="openCategories.{{ $groupKey }}"
-                                 x-transition:enter="transition ease-out duration-150"
-                                 x-transition:enter-start="opacity-0 -translate-y-1"
-                                 x-transition:enter-end="opacity-100 translate-y-0"
-                                 class="mt-1 ml-4 pl-3 border-l border-white/70 space-y-1">
+                                 x-transition:enter="transition-all ease-out duration-250"
+                                 x-transition:enter-start="opacity-0 -translate-y-2 max-h-0"
+                                 x-transition:enter-end="opacity-100 translate-y-0 max-h-96"
+                                 x-transition:leave="transition-all ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 translate-y-0 max-h-96"
+                                 x-transition:leave-end="opacity-0 -translate-y-2 max-h-0"
+                                 class="overflow-hidden mt-1 ml-4 pl-3 border-l border-white/70 space-y-1">
                                 @foreach($visibleItems as $item)
                                     @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
                                     <a href="{{ route($item['route']) }}"
-                                       class="block px-2.5 py-1.5 text-[13px] leading-relaxed rounded-md transition-colors text-white
+                                       class="block px-2.5 py-1.5 text-[13px] leading-relaxed rounded-none transition-colors text-white border-l-[3px]
                                               {{ $isItemActive
-                                                  ? 'bg-white/20 font-semibold text-white'
-                                                  : 'hover:bg-white/10 text-white/85 font-normal' }}">
+                                                  ? 'bg-white/20 font-semibold text-white border-[#e4c85b]'
+                                                  : 'border-transparent hover:bg-white/10 text-white/85 font-normal' }}">
                                         <span>{{ $item['label'] }}</span>
                                     </a>
                                 @endforeach
@@ -210,8 +213,8 @@
                             <button type="button"
                                     @click="sidebarOpen = true; openCategories.{{ $groupKey }} = true"
                                     title="{{ $group['label'] }}"
-                                    class="w-9 h-9 rounded-md flex items-center justify-center transition-colors cursor-pointer
-                                           {{ $isGroupActive ? 'bg-white/20 text-white shadow-xs' : 'text-white/80 hover:text-white hover:bg-white/10' }}">
+                                    class="w-9 h-9 rounded-none flex items-center justify-center transition-colors cursor-pointer border-l-[3px]
+                                           {{ $isGroupActive ? 'bg-white/20 text-white shadow-xs border-[#e4c85b]' : 'border-transparent text-white/80 hover:text-white hover:bg-white/10' }}">
                                 <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                     {!! $group['icon'] !!}
                                 </svg>

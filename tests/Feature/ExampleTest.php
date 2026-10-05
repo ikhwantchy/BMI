@@ -7,14 +7,13 @@ use Tests\TestCase;
 class ExampleTest extends TestCase
 {
     /**
-     * Test public landing page loads properly.
+     * Test root route redirects guest to login.
      */
-    public function test_landing_page_renders_successfully(): void
+    public function test_root_route_redirects_guest_to_login(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
-        $response->assertSee('Koperasi BMI');
+        $response->assertRedirect(route('login'));
     }
 
     /**
