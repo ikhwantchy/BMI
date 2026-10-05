@@ -1,4 +1,7 @@
-<div x-data="{ step: 1 }" class="max-w-2xl mx-auto py-4">
+<div x-data="{ step: sessionStorage.getItem('visit_step_{{ $visit->id }}') ? parseInt(sessionStorage.getItem('visit_step_{{ $visit->id }}')) : 1 }" 
+     x-init="$watch('step', val => sessionStorage.setItem('visit_step_{{ $visit->id }}', val))"
+     class="max-w-2xl mx-auto py-4">
+    
     <div class="mb-6">
         <h2 class="text-lg font-bold text-gray-900">Form Pelaksanaan Kunjungan</h2>
         <p class="text-xs text-gray-500">Isi seluruh tahapan kunjungan di bawah ini.</p>
@@ -7,17 +10,18 @@
     <!-- Stepper Navigation -->
     <div class="flex items-center justify-between mb-8 relative">
         <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 -z-10"></div>
-        <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 -z-10 transition-all duration-300" :style="`width: ${(step-1) * 33.33}%`"></div>
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 -z-10 transition-all duration-300" :style="`width: ${(step-1) * 25}%`"></div>
         
-        <template x-for="i in 4">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-colors"
+        <template x-for="i in 5">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-colors cursor-pointer"
+                 @click="step = i"
                  :class="step >= i ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-gray-300 text-gray-400'">
                 <span x-text="i"></span>
             </div>
         </template>
     </div>
 
-    <form action="{{ route('visits.submit_execution', $visit) }}" method="POST">
+    <form id="executeForm" action="{{ route('visits.submit_execution', $visit) }}" method="POST">
         @csrf
 
         <!-- STEP 1: Info & Catatan Lapangan -->
@@ -69,56 +73,62 @@
                 <button type="button" @click="step = 3" class="btn-primary">Selanjutnya &rarr;</button>
             </div>
         </div>
-
-        <!-- STEP 3: Rekomendasi -->
-        <div x-show="step === 3" x-transition style="display: none;">
-            <div class="bg-white border border-gray-200 p-5 mb-4 shadow-sm">
-                <h3 class="font-bold text-gray-800 border-b pb-2 mb-4">3. Rekomendasi & Tindak Lanjut</h3>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-700 mb-2">Rekomendasi Utama <span class="text-red-500">*</span></label>
-                        <select name="recommendation" required class="input-base w-full">
-                            <option value="">-- Pilih Rekomendasi --</option>
-                            <option value="recommended">Direkomendasikan (Usaha Sehat)</option>
-                            <option value="continued_coaching">Perlu Pembinaan Lanjutan</option>
-                            <option value="not_recommended">Tidak Direkomendasikan / Kritis</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-700 mb-2">Target / Perbaikan Selanjutnya <span class="text-red-500">*</span></label>
-                        <textarea name="recommendation_reason" required rows="3" class="input-base w-full" placeholder="Tindak lanjut yang harus dilakukan anggota..."></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-between">
-                <button type="button" @click="step = 2" class="btn-secondary">&larr; Kembali</button>
-                <button type="button" @click="step = 4" class="btn-primary">Preview & Submit &rarr;</button>
-            </div>
-        </div>
-
-        <!-- STEP 4: Submit -->
-        <div x-show="step === 4" x-transition style="display: none;">
-            <div class="bg-emerald-50 border border-emerald-200 p-5 mb-4 text-center rounded shadow-sm">
-                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                </div>
-                <h3 class="font-bold text-emerald-900 text-lg mb-1">Siap Disubmit!</h3>
-                <p class="text-xs text-emerald-700 mb-4">Pastikan Anda sudah mengunggah foto lapangan (di bawah form ini) sebelum klik Submit.</p>
-                
-                <button type="submit" class="btn-primary w-full sm:w-auto px-8 py-3 text-base shadow-md">
-                    Kirim Hasil Kunjungan
-                </button>
-            </div>
-            <div class="flex justify-start">
-                <button type="button" @click="step = 3" class="btn-secondary">&larr; Kembali Cek Data</button>
-            </div>
-        </div>
     </form>
 
-    <!-- Upload Foto Section (Tampil Terus di Bawah Form) -->
-    <div class="mt-8 border-t-2 border-dashed border-gray-300 pt-6">
-        <h3 class="font-bold text-gray-800 mb-3">Dokumentasi Lapangan</h3>
-        @include('visits.partials.upload-form')
+    <!-- STEP 3: Dokumentasi (Separate Form for AJAX) -->
+    <div x-show="step === 3" x-transition style="display: none;">
+        <div class="bg-white border border-gray-200 p-5 mb-4 shadow-sm">
+            <h3 class="font-bold text-gray-800 border-b pb-2 mb-4">3. Dokumentasi Lapangan</h3>
+            @include('visits.partials.upload-form')
+        </div>
+        <div class="flex justify-between">
+            <button type="button" @click="step = 2" class="btn-secondary">&larr; Kembali</button>
+            <button type="button" @click="step = 4" class="btn-primary">Selanjutnya &rarr;</button>
+        </div>
+    </div>
+
+    <!-- STEP 4: Rekomendasi -->
+    <div x-show="step === 4" x-transition style="display: none;">
+        <div class="bg-white border border-gray-200 p-5 mb-4 shadow-sm">
+            <h3 class="font-bold text-gray-800 border-b pb-2 mb-4">4. Rekomendasi & Tindak Lanjut</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-700 mb-2">Rekomendasi Utama <span class="text-red-500">*</span></label>
+                    <select form="executeForm" name="recommendation" required class="input-base w-full">
+                        <option value="">-- Pilih Rekomendasi --</option>
+                        <option value="recommended">Direkomendasikan (Usaha Sehat)</option>
+                        <option value="continued_coaching">Perlu Pembinaan Lanjutan</option>
+                        <option value="not_recommended">Tidak Direkomendasikan / Kritis</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-700 mb-2">Target / Perbaikan Selanjutnya <span class="text-red-500">*</span></label>
+                    <textarea form="executeForm" name="recommendation_reason" required rows="3" class="input-base w-full" placeholder="Tindak lanjut yang harus dilakukan anggota..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-between">
+            <button type="button" @click="step = 3" class="btn-secondary">&larr; Kembali</button>
+            <button type="button" @click="step = 5" class="btn-primary">Preview & Submit &rarr;</button>
+        </div>
+    </div>
+
+    <!-- STEP 5: Submit -->
+    <div x-show="step === 5" x-transition style="display: none;">
+        <div class="bg-emerald-50 border border-emerald-200 p-5 mb-4 text-center rounded shadow-sm">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="font-bold text-emerald-900 text-lg mb-1">Siap Disubmit!</h3>
+            <p class="text-xs text-emerald-700 mb-4">Pastikan Anda sudah melengkapi semua data kunjungan dari tahap 1 sampai 4.</p>
+            
+            <button type="submit" form="executeForm" onclick="sessionStorage.removeItem('visit_step_{{ $visit->id }}')" class="btn-primary w-full sm:w-auto px-8 py-3 text-base shadow-md">
+                Kirim Hasil Kunjungan
+            </button>
+        </div>
+        <div class="flex justify-start">
+            <button type="button" @click="step = 4" class="btn-secondary">&larr; Kembali Cek Data</button>
+        </div>
     </div>
 </div>
