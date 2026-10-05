@@ -153,9 +153,43 @@
                 const indicator = document.getElementById('processingIndicator');
                 const btnUpload = document.getElementById('btnUpload');
                 
+                indicator.innerText = "Mengambil Lokasi & Memproses...";
                 indicator.classList.remove('hidden');
                 btnUpload.disabled = true;
                 btnUpload.classList.add('opacity-50', 'cursor-not-allowed');
+
+                // Dapatkan GPS Location
+                let locationText = "Lokasi: GPS tidak tersedia/izin ditolak";
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { 
+                            timeout: 10000, 
+                            enableHighAccuracy: true 
+                        });
+                    });
+                    const lat = pos.coords.latitude.toFixed(6);
+                    const lng = pos.coords.longitude.toFixed(6);
+                    const acc = Math.round(pos.coords.accuracy);
+                    locationText = `Lokasi: Lat ${lat}, Lng ${lng} (Akurasi: ${acc}m)`;
+                    
+                    // Coba dapatkan alamat (Opsional, dibatasi 3 detik agar tidak lemot)
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 3000);
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`, { signal: controller.signal });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.display_name) {
+                                // Potong alamat kalau kepanjangan
+                                let addr = data.display_name.length > 70 ? data.display_name.substring(0, 70) + '...' : data.display_name;
+                                locationText = `Lokasi: ${lat}, ${lng} - ${addr}`;
+                            }
+                        }
+                        clearTimeout(timeoutId);
+                    } catch(e) {}
+                } catch(e) {
+                    console.warn("GPS Error:", e);
+                }
 
                 const img = new Image();
                 img.src = URL.createObjectURL(file);
@@ -184,13 +218,14 @@
                 // Draw original image resized
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Setup text sizes based on new image dimensions
-                const fontSize = Math.max(20, Math.floor(width * 0.035));
-                const padding = fontSize;
-                const bgHeight = (fontSize * 2.5);
+                // Styling Text (Lebih kecil, tidak tebal, dan tidak bertumpuk)
+                const fontSize = Math.max(14, Math.floor(width * 0.022)); // Font lebih kecil
+                const padding = fontSize * 1.5;
+                const lineHeight = fontSize * 1.6;
+                const bgHeight = (lineHeight * 3) + padding; // Untuk 3 baris text
 
                 // Add dark semi-transparent background at the bottom
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
                 ctx.fillRect(0, canvas.height - bgHeight, canvas.width, bgHeight);
 
                 // Format timestamp
@@ -200,15 +235,24 @@
                     hour: '2-digit', minute: '2-digit', second: '2-digit'
                 });
 
-                // Add Timestamp Text
-                ctx.fillStyle = '#ffffff';
-                ctx.font = `bold ${fontSize}px sans-serif`;
-                ctx.fillText(`Waktu: ${timestamp}`, padding, canvas.height - bgHeight + fontSize + (padding * 0.2));
+                // Set Base Font
+                ctx.font = `${fontSize}px sans-serif`; // Normal, tidak bold
+                ctx.textBaseline = 'top';
                 
-                // Add Context Text (Location/Visit Info)
+                let currentY = canvas.height - bgHeight + (padding / 2);
+
+                // Baris 1: Kunjungan (Warna Kuning)
                 ctx.fillStyle = '#e4c85b';
-                ctx.font = `${fontSize * 0.8}px sans-serif`;
-                ctx.fillText(`Kunjungan: {{ $visit->business->name }}`, padding, canvas.height - padding);
+                ctx.fillText(`Kunjungan: {{ $visit->business->name }}`, padding, currentY);
+                currentY += lineHeight;
+
+                // Baris 2: Waktu (Warna Putih)
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(`Waktu: ${timestamp}`, padding, currentY);
+                currentY += lineHeight;
+
+                // Baris 3: Lokasi (Warna Putih)
+                ctx.fillText(locationText, padding, currentY);
 
                 // Convert back to file and replace input
                 canvas.toBlob(blob => {
@@ -218,6 +262,7 @@
                     e.target.files = dt.files;
                     
                     indicator.classList.add('hidden');
+                    indicator.innerText = "Menambahkan Timestamp..."; // Reset
                     btnUpload.disabled = false;
                     btnUpload.classList.remove('opacity-50', 'cursor-not-allowed');
                 }, 'image/jpeg', 0.85);
