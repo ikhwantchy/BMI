@@ -6,9 +6,11 @@ use App\Enums\CoachingStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\ScopedByBranch;
 
 class CoachingRecommendation extends Model
 {
+    use ScopedByBranch;
     protected $fillable = [
         'evaluation_id',
         'category',
@@ -19,6 +21,7 @@ class CoachingRecommendation extends Model
         'created_by',
         'validated_by',
         'validated_at',
+        'branch_id',
     ];
 
     protected function casts(): array
@@ -27,6 +30,11 @@ class CoachingRecommendation extends Model
             'status'       => CoachingStatus::class,
             'validated_at' => 'datetime',
         ];
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function evaluation(): BelongsTo

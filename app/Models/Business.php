@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\ScopedByBranch;
 
 class Business extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, ScopedByBranch;
 
     protected $fillable = [
         'member_id',
@@ -22,6 +23,7 @@ class Business extends Model
         'products_services',
         'initial_condition',
         'status',
+        'branch_id',
     ];
 
     protected function casts(): array
@@ -33,6 +35,11 @@ class Business extends Model
     }
 
     // ─── Relationships ───────────────────────────────────────────────────────
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function member(): BelongsTo
     {

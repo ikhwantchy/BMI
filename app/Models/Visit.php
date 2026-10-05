@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\ScopedByBranch;
 
 class Visit extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, ScopedByBranch;
 
     protected $fillable = [
         'business_id',
@@ -21,6 +22,7 @@ class Visit extends Model
         'evaluation_period',
         'status',
         'field_notes',
+        'branch_id',
     ];
 
     protected function casts(): array
@@ -32,6 +34,11 @@ class Visit extends Model
     }
 
     // ─── Relationships ───────────────────────────────────────────────────────
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function business(): BelongsTo
     {

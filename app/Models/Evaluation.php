@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\ScopedByBranch;
 
 class Evaluation extends Model
 {
-    use HasFactory;
+    use HasFactory, ScopedByBranch;
 
     protected $fillable = [
         'visit_id',
@@ -25,6 +26,7 @@ class Evaluation extends Model
         'submitted_at',
         'validated_at',
         'validator_notes',
+        'branch_id',
     ];
 
     protected function casts(): array
@@ -39,6 +41,11 @@ class Evaluation extends Model
     }
 
     // ─── Relationships ───────────────────────────────────────────────────────
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function visit(): BelongsTo
     {

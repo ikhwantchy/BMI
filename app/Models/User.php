@@ -12,10 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Spatie\Permission\Traits\HasRoles;
+use App\Traits\ScopedByBranch;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles, ScopedByBranch;
 
     protected $fillable = [
         'name',
@@ -24,6 +27,7 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'branch_id',
     ];
 
     protected $hidden = [
@@ -40,6 +44,11 @@ class User extends Authenticatable
     }
 
     // ─── Relationships ───────────────────────────────────────────────────────
+
+    public function branch(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function visits(): HasMany
     {
