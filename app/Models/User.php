@@ -13,12 +13,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 use Spatie\Permission\Traits\HasRoles;
-use App\Traits\ScopedByBranch;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles, ScopedByBranch;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
