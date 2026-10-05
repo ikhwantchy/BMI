@@ -35,9 +35,12 @@ class ReportController extends Controller
         // Rata-rata skor dari evaluasi tervalidasi
         $avgScore = Evaluation::validated()->avg('total_score') ?? 0;
 
+        $driver = DB::connection()->getDriverName();
+        $monthExpr = $driver === 'sqlite' ? "strftime('%Y-%m', created_at)" : "DATE_FORMAT(created_at, '%Y-%m')";
+
         // Evaluasi per bulan (12 bulan terakhir)
         $monthlyTrend = Evaluation::select(
-                DB::raw("strftime('%Y-%m', created_at) as month"),
+                DB::raw("{$monthExpr} as month"),
                 DB::raw('count(*) as total'),
                 DB::raw('avg(total_score) as avg_score')
             )
@@ -51,6 +54,68 @@ class ReportController extends Controller
             'totalMembers', 'totalBusinesses', 'totalVisits',
             'avgScore', 'monthlyTrend'
         ));
+    }
+
+    /**
+     * Analitik Komparasi Cabang & Kinerja Evaluasi
+     */
+    public function analytics(Request $request)
+    {
+        $period = $request->get('period');
+
+        // Parameter scoring averages across validated evaluations
+        $paramQuery = Evaluation::validated();
+        if ($period) {
+            $paramQuery->whereHas('visit', fn($q) => $q->where('evaluation_period', $period));
+        }
+
+        $paramAverages = [
+            'kondisi_usaha'        => round($paramQuery->avg('business_condition_score') ?? 0, 1),
+            'perkembangan_omzet'   => round($paramQuery->avg('revenue_growth_score') ?? 0, 1),
+            'aktivitas_usaha'      => round($paramQuery->avg('business_activity_score') ?? 0, 1),
+            'pengelolaan_keuangan' => round($paramQuery->avg('financial_management_score') ?? 0, 1),
+            'kendala_usaha'        => round($paramQuery->avg('business_constraint_score') ?? 0, 1),
+            'overall_avg'          => round($paramQuery->avg('total_score') ?? 0, 1),
+        ];
+
+        // Comparison per Branch
+        $branches = \App\Models\Branch::withCount(['members', 'businesses'])->get();
+
+        $branchStats = $branches->map(function ($branch) use ($period) {
+            $evalQuery = Evaluation::validated()
+                ->whereHas('business', fn($q) => $q->where('branch_id', $branch->id));
+
+            if ($period) {
+                $evalQuery->whereHas('visit', fn($q) => $q->where('evaluation_period', $period));
+            }
+
+            $evals = (clone $evalQuery)->get();
+            $totalEvals = $evals->count();
+            $avgScore = $totalEvals > 0 ? round($evals->avg('total_score'), 1) : 0;
+            $recommendedCount = $evals->where('recommendation.value', 'recommended')->count();
+            $coachingCount = $evals->where('recommendation.value', 'follow_up_coaching')->count();
+            $notRecommendedCount = $evals->where('recommendation.value', 'not_recommended')->count();
+
+            return [
+                'branch'              => $branch,
+                'total_evaluations'   => $totalEvals,
+                'avg_score'           => $avgScore,
+                'recommended_count'   => $recommendedCount,
+                'coaching_count'      => $coachingCount,
+                'not_recommended_cnt' => $notRecommendedCount,
+                'recommendation_rate' => $totalEvals > 0 ? round(($recommendedCount / $totalEvals) * 100, 1) : 0,
+            ];
+        });
+
+        // Top Business Sectors Performance
+        $sectorStats = Business::where('status', 'active')
+            ->select('business_type', DB::raw('count(*) as total'))
+            ->groupBy('business_type')
+            ->orderByDesc('total')
+            ->limit(6)
+            ->get();
+
+        return view('reports.analytics', compact('paramAverages', 'branchStats', 'sectorStats', 'period'));
     }
 
     /**

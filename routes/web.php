@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/evaluations', [ReportController::class, 'evaluations'])->name('reports.evaluations');
     Route::get('/reports/recommendations', [ReportController::class, 'recommendations'])->name('reports.recommendations');
+    Route::get('/reports/analytics', [ReportController::class, 'analytics'])->name('reports.analytics');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 
     // Audit Trail & Keamanan
@@ -80,6 +81,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/branches', [\App\Http\Controllers\BranchController::class, 'index'])->name('branches.index');
     Route::post('/branches', [\App\Http\Controllers\BranchController::class, 'store'])->name('branches.store');
     Route::put('/branches/{branch}', [\App\Http\Controllers\BranchController::class, 'update'])->name('branches.update');
+
+    // Master Data
+    Route::get('/master-data', [\App\Http\Controllers\MasterDataController::class, 'index'])->name('master.index');
+    Route::post('/master-data', [\App\Http\Controllers\MasterDataController::class, 'store'])->name('master.store');
+    Route::put('/master-data/{master}', [\App\Http\Controllers\MasterDataController::class, 'update'])->name('master.update');
+
+    // Impor Data Massal (CSV)
+    Route::get('/import', [\App\Http\Controllers\ImportController::class, 'index'])->name('import.index');
+    Route::get('/import/template/{type}', [\App\Http\Controllers\ImportController::class, 'template'])->name('import.template');
+    Route::post('/import/preview', [\App\Http\Controllers\ImportController::class, 'preview'])->name('import.preview');
+    Route::post('/import/confirm', [\App\Http\Controllers\ImportController::class, 'confirm'])->name('import.confirm');
 });
 
 // ─── Health Check Monitoring ─────────────────────────────────────────────────
