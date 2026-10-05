@@ -61,7 +61,7 @@
 
         {{-- Navigation --}}
         <nav class="flex-1 overflow-y-auto overflow-x-hidden transition-all duration-200"
-             :class="sidebarOpen ? 'px-2 py-2 space-y-0.5' : 'px-1.5 py-2 space-y-1.5'">
+             :class="sidebarOpen ? 'px-2 py-2.5 space-y-1' : 'px-1.5 py-2 space-y-1.5'">
             @php
                 $userRole = auth()->user()->role;
 
@@ -167,11 +167,11 @@
                 @if(count($visibleItems) > 0)
                     <div>
                         {{-- Expanded Mode (Full Sidebar) --}}
-                        <div x-show="sidebarOpen" class="space-y-0.5">
+                        <div x-show="sidebarOpen" class="space-y-1">
                             {{-- Category Toggle Button (Icon + Label + Chevron) --}}
                             <button type="button"
                                     @click="openCategories.{{ $groupKey }} = !openCategories.{{ $groupKey }}"
-                                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer text-white
+                                    class="w-full flex items-center justify-between px-2.5 py-2 rounded-md text-[13px] font-medium leading-relaxed transition-colors cursor-pointer text-white
                                            {{ $isGroupActive ? 'bg-white/15 text-white font-semibold' : 'hover:bg-white/10 text-white/90' }}">
                                 <div class="flex items-center gap-2.5 min-w-0">
                                     <svg class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
@@ -186,16 +186,16 @@
                                 </svg>
                             </button>
 
-                            {{-- Submenu Items (Text Only, Solid White Guide Line) --}}
+                            {{-- Submenu Items (Text Only, Thin 1px White Guide Line) --}}
                             <div x-show="openCategories.{{ $groupKey }}"
                                  x-transition:enter="transition ease-out duration-150"
                                  x-transition:enter-start="opacity-0 -translate-y-1"
                                  x-transition:enter-end="opacity-100 translate-y-0"
-                                 class="mt-0.5 ml-4 pl-3 border-l-2 border-white space-y-0.5">
+                                 class="mt-1 ml-4 pl-3 border-l border-white/70 space-y-1">
                                 @foreach($visibleItems as $item)
                                     @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
                                     <a href="{{ route($item['route']) }}"
-                                       class="block px-2 py-1 text-[13px] leading-snug rounded-md transition-colors text-white
+                                       class="block px-2.5 py-1.5 text-[13px] leading-relaxed rounded-md transition-colors text-white
                                               {{ $isItemActive
                                                   ? 'bg-white/20 font-semibold text-white'
                                                   : 'hover:bg-white/10 text-white/85 font-normal' }}">
