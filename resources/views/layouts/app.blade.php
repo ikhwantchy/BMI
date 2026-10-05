@@ -20,12 +20,7 @@
 <div class="flex h-full" x-data="{
     sidebarOpen: true,
     profileModal: false,
-    openCategories: {
-        operasional: {{ request()->routeIs('members.*', 'businesses.*', 'visits.*', 'evaluations.*', 'coaching.*') ? 'true' : 'false' }},
-        pelaporan: {{ request()->routeIs('reports.*') ? 'true' : 'false' }},
-        sistem: {{ request()->routeIs('users.*', 'branches.*', 'master.*', 'import.*') ? 'true' : 'false' }},
-        keamanan: {{ request()->routeIs('audit.*') ? 'true' : 'false' }}
-    }
+    activeCategory: '{{ request()->routeIs('members.*', 'businesses.*', 'visits.*', 'evaluations.*', 'coaching.*') ? 'operasional' : (request()->routeIs('reports.*') ? 'pelaporan' : (request()->routeIs('users.*', 'branches.*', 'master.*', 'import.*') ? 'sistem' : (request()->routeIs('audit.*') ? 'keamanan' : 'operasional'))) }}'
 }">
 
     {{-- ── Mobile overlay ──────────────────────────────────────────────────── --}}
@@ -170,9 +165,8 @@
                         <div x-show="sidebarOpen" class="space-y-1">
                             {{-- Category Toggle Button (Icon + Label + Chevron) --}}
                             <button type="button"
-                                    @click="openCategories.{{ $groupKey }} = !openCategories.{{ $groupKey }}"
-                                    class="w-full flex items-center justify-between px-2.5 py-2 rounded-none text-[13px] font-medium leading-relaxed transition-colors cursor-pointer text-white border-l-[3px]
-                                           {{ $isGroupActive ? 'bg-white/15 text-white font-semibold border-[#e4c85b]' : 'border-transparent hover:bg-white/10 text-white/90' }}">
+                                    @click="activeCategory = (activeCategory === '{{ $groupKey }}' ? null : '{{ $groupKey }}')"
+                                    class="w-full flex items-center justify-between px-2.5 py-2 rounded-none text-[13px] font-medium leading-relaxed transition-colors duration-150 cursor-pointer text-white border-l-[3px] border-transparent hover:bg-white/10 text-white/90">
                                 <div class="flex items-center gap-2.5 min-w-0">
                                     <svg class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                         {!! $group['icon'] !!}
@@ -180,25 +174,25 @@
                                     <span class="truncate">{{ $group['label'] }}</span>
                                 </div>
                                 <svg class="w-3.5 h-3.5 shrink-0 transform transition-transform duration-200 ease-in-out text-white/70"
-                                     :class="openCategories.{{ $groupKey }} ? 'rotate-90' : ''"
+                                     :class="activeCategory === '{{ $groupKey }}' ? 'rotate-90' : ''"
                                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </button>
 
-                            {{-- Submenu Items (Text Only, Thin 1px White Guide Line, Smooth Up-Down) --}}
-                            <div x-show="openCategories.{{ $groupKey }}"
-                                 x-transition:enter="transition-all ease-out duration-250"
-                                 x-transition:enter-start="opacity-0 -translate-y-2 max-h-0"
-                                 x-transition:enter-end="opacity-100 translate-y-0 max-h-96"
-                                 x-transition:leave="transition-all ease-in duration-200"
-                                 x-transition:leave-start="opacity-100 translate-y-0 max-h-96"
-                                 x-transition:leave-end="opacity-0 -translate-y-2 max-h-0"
-                                 class="overflow-hidden mt-1 ml-4 pl-3 border-l border-white/70 space-y-1">
+                            {{-- Submenu Items (Text Only, Thin 1px White Guide Line, Smooth & Clean) --}}
+                            <div x-show="activeCategory === '{{ $groupKey }}'"
+                                 x-transition:enter="transition-opacity ease-out duration-150"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition-opacity ease-in duration-100"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="mt-1 ml-4 pl-3 border-l border-white/70 space-y-1">
                                 @foreach($visibleItems as $item)
                                     @php $isItemActive = request()->routeIs($item['route'] . '*'); @endphp
                                     <a href="{{ route($item['route']) }}"
-                                       class="block px-2.5 py-1.5 text-[13px] leading-relaxed rounded-none transition-colors text-white border-l-[3px]
+                                       class="block px-2.5 py-1.5 text-[13px] leading-relaxed rounded-none transition-colors duration-150 text-white border-l-[3px]
                                               {{ $isItemActive
                                                   ? 'bg-white/20 font-semibold text-white border-[#e4c85b]'
                                                   : 'border-transparent hover:bg-white/10 text-white/85 font-normal' }}">
@@ -211,9 +205,9 @@
                         {{-- Collapsed Mode (Rail Icon Only) --}}
                         <div x-show="!sidebarOpen" style="display: none;" class="flex flex-col items-center">
                             <button type="button"
-                                    @click="sidebarOpen = true; openCategories.{{ $groupKey }} = true"
+                                    @click="sidebarOpen = true; activeCategory = '{{ $groupKey }}'"
                                     title="{{ $group['label'] }}"
-                                    class="w-9 h-9 rounded-none flex items-center justify-center transition-colors cursor-pointer border-l-[3px]
+                                    class="w-9 h-9 rounded-none flex items-center justify-center transition-colors duration-150 cursor-pointer border-l-[3px]
                                            {{ $isGroupActive ? 'bg-white/20 text-white shadow-xs border-[#e4c85b]' : 'border-transparent text-white/80 hover:text-white hover:bg-white/10' }}">
                                 <svg class="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                     {!! $group['icon'] !!}
@@ -250,14 +244,6 @@
         {{-- Top bar --}}
         <header class="flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-200 shrink-0 shadow-xs">
             <div class="flex items-center gap-3">
-                <button @click="sidebarOpen = !sidebarOpen"
-                        class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
-                        :title="sidebarOpen ? 'Tutup sidebar (Layar Penuh)' : 'Buka sidebar'">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 4v16"/>
-                    </svg>
-                </button>
                 <div>
                     <h1 class="text-base font-bold text-gray-800 tracking-tight">@yield('page-title', 'Sistem Evaluasi Usaha')</h1>
                 </div>
@@ -301,15 +287,12 @@
                     BMI Syariah
                 </span>
 
-                {{-- User Profile Pill & Dropdown (Top Right) --}}
+                {{-- User Profile & Dropdown (Top Right - Email only, No outline) --}}
                 <div class="relative ml-2" x-data="{ profileDropdown: false }" @click.outside="profileDropdown = false">
                     <button type="button"
                             @click="profileDropdown = !profileDropdown"
-                            class="flex items-center gap-2.5 p-1 pl-3 rounded-full hover:bg-gray-100 border border-gray-200 transition-colors cursor-pointer">
-                        <div class="text-right hidden sm:block">
-                            <p class="text-xs font-bold text-gray-900 leading-tight">{{ auth()->user()->name }}</p>
-                            <p class="text-[10px] text-gray-500 font-semibold leading-tight mt-0.5">{{ auth()->user()->roleLabel() }}</p>
-                        </div>
+                            class="flex items-center gap-2.5 text-gray-700 hover:text-gray-900 transition-colors cursor-pointer focus:outline-none py-1">
+                        <span class="text-xs font-medium text-gray-700 hover:text-gray-900 hidden sm:inline">{{ auth()->user()->email }}</span>
                         {{-- Profile Icon Button matching reference --}}
                         <div class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center shrink-0 transition-colors">
                             <svg class="w-4 h-4 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
