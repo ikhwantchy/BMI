@@ -33,7 +33,7 @@
         </form>
 
         @can('create', App\Models\Member::class)
-            <a href="{{ route('members.create') }}" class="btn-primary w-full sm:w-auto justify-center shrink-0">
+            <a href="{{ route('members.create') }}" class="btn-primary w-full sm:w-auto justify-center shrink-0 drawer-link">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
@@ -91,7 +91,7 @@
                                         </a>
                                         @can('update', $member)
                                             <a href="{{ route('members.edit', $member) }}"
-                                               class="text-xs font-semibold text-gray-600 hover:text-gray-900">
+                                               class="text-xs font-semibold text-gray-600 hover:text-gray-900 drawer-link">
                                                 Edit
                                             </a>
                                         @endcan
@@ -152,7 +152,7 @@
                             </a>
                             @can('update', $member)
                                 <a href="{{ route('members.edit', $member) }}"
-                                   class="btn-secondary text-xs py-1.5 px-3">
+                                   class="btn-secondary text-xs py-1.5 px-3 drawer-link">
                                     Edit
                                 </a>
                             @endcan

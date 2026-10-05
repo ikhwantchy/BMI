@@ -13,7 +13,7 @@
         </div>
         @if(auth()->user()->canManageUsers())
             <a href="{{ route('users.create') }}"
-               class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#009a4c] hover:bg-[#007a3d] text-white text-xs font-semibold rounded-xl shadow-xs hover:shadow transition-all shrink-0">
+               class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#009a4c] hover:bg-[#007a3d] text-white text-xs font-semibold rounded-xl shadow-xs hover:shadow transition-all shrink-0 drawer-link">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -127,7 +127,7 @@
                             <td class="px-5 py-4 whitespace-nowrap text-right space-x-1.5">
                                 @if(auth()->user()->canManageUsers())
                                     <a href="{{ route('users.edit', $user) }}"
-                                       class="inline-flex items-center px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs transition-colors">
+                                       class="inline-flex items-center px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs transition-colors drawer-link">
                                         Edit
                                     </a>
 

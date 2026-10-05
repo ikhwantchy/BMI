@@ -449,6 +449,189 @@
     </div>
 </div>
 
+    {{-- Global Drawer Form Overlay --}}
+    <div x-data="drawerFormManager()" @open-drawer.window="openDrawer($event.detail)" @close-drawer.window="closeDrawer()">
+        <!-- Backdrop -->
+        <div x-show="open" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/50 z-[90] backdrop-blur-sm" 
+             style="display: none;"
+             @click="closeDrawer()"></div>
+             
+        <!-- Drawer Panel (Right Side) -->
+        <div x-show="open"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="translate-x-full"
+             class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-[100] flex flex-col"
+             style="display: none;">
+             
+             <!-- Drawer Header -->
+             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white shrink-0">
+                 <h3 class="text-base font-bold text-gray-900 tracking-tight" x-text="title">Form</h3>
+                 <button @click="closeDrawer()" class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer">
+                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                     </svg>
+                 </button>
+             </div>
+             
+             <!-- Drawer Body -->
+             <div class="flex-1 overflow-y-auto bg-gray-50 relative" id="drawer-content-area">
+                 <!-- Loader -->
+                 <div x-show="loading" class="absolute inset-0 bg-white/70 z-10 flex flex-col items-center justify-center">
+                     <div class="w-10 h-10 border-4 border-[#009a4c] border-t-transparent rounded-full animate-spin"></div>
+                     <p class="mt-4 text-xs font-semibold text-gray-600">Memuat Formulir...</p>
+                 </div>
+                 
+                 <!-- Injected HTML goes here -->
+                 <div id="drawer-injected-html" class="px-6 py-6 pb-24"></div>
+             </div>
+        </div>
+    </div>
+
 @stack('scripts')
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('drawerFormManager', () => ({
+            open: false,
+            loading: false,
+            title: 'Memuat...',
+            url: '',
+
+            openDrawer(url) {
+                this.url = url;
+                this.open = true;
+                this.loading = true;
+                document.body.style.overflow = 'hidden';
+                this.fetchContent(url);
+            },
+
+            closeDrawer() {
+                this.open = false;
+                document.body.style.overflow = '';
+                setTimeout(() => {
+                    document.getElementById('drawer-injected-html').innerHTML = '';
+                    this.title = 'Memuat...';
+                }, 300);
+            },
+
+            fetchContent(url) {
+                fetch(url)
+                    .then(res => res.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        const pageTitle = doc.querySelector('h1') ? doc.querySelector('h1').innerText : 'Form';
+                        this.title = pageTitle;
+
+                        const mainContent = doc.querySelector('main');
+                        if (mainContent) {
+                            const container = document.getElementById('drawer-injected-html');
+                            // Extract form wrappers or cards directly to remove extra padding
+                            container.innerHTML = mainContent.innerHTML;
+
+                            // Find cancel buttons and bind closeDrawer
+                            container.querySelectorAll('a').forEach(a => {
+                                if (a.innerText.toLowerCase().includes('batal') || a.innerText.toLowerCase().includes('kembali')) {
+                                    a.addEventListener('click', (e) => {
+                                        e.preventDefault();
+                                        this.closeDrawer();
+                                    });
+                                }
+                            });
+
+                            const forms = container.querySelectorAll('form');
+                            forms.forEach(form => {
+                                form.addEventListener('submit', (e) => this.handleFormSubmit(e, form));
+                            });
+                        } else {
+                            this.closeDrawer();
+                            window.location.href = url; // Fallback
+                        }
+                        this.loading = false;
+                    })
+                    .catch(() => {
+                        window.location.href = url; // Fallback
+                    });
+            },
+
+            handleFormSubmit(e, form) {
+                e.preventDefault();
+                this.loading = true;
+                const formData = new FormData(form);
+                const method = form.method.toUpperCase();
+                const action = form.action;
+
+                fetch(action, {
+                    method: method,
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json, text/html'
+                    }
+                })
+                .then(async res => {
+                    if (res.redirected && res.url !== action) {
+                        window.location.href = res.url;
+                        return;
+                    }
+
+                    if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
+                        const json = await res.json();
+                        if (json.redirect) window.location.href = json.redirect;
+                        else window.location.reload();
+                        return;
+                    }
+
+                    const html = await res.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const mainContent = doc.querySelector('main');
+
+                    if (mainContent) {
+                        const container = document.getElementById('drawer-injected-html');
+                        container.innerHTML = mainContent.innerHTML;
+                        const forms = container.querySelectorAll('form');
+                        forms.forEach(f => f.addEventListener('submit', (ev) => this.handleFormSubmit(ev, f)));
+                        
+                        // Re-bind cancel buttons
+                        container.querySelectorAll('a').forEach(a => {
+                            if (a.innerText.toLowerCase().includes('batal') || a.innerText.toLowerCase().includes('kembali')) {
+                                a.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    this.closeDrawer();
+                                });
+                            }
+                        });
+                    } else {
+                        // Fallback
+                        window.location.reload();
+                    }
+                    this.loading = false;
+                })
+                .catch(() => window.location.reload());
+            }
+        }));
+    });
+
+    // Intercept clicks on links with .drawer-link
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.drawer-link');
+        if (link) {
+            e.preventDefault();
+            window.dispatchEvent(new CustomEvent('open-drawer', { detail: link.href }));
+        }
+    });
+</script>
 </body>
 </html>
