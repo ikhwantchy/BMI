@@ -179,6 +179,20 @@ class VisitController extends Controller
 
         $this->auditService->logCreate($document);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'document' => [
+                    'id' => $document->id,
+                    'file_path' => asset('storage/' . $document->file_path),
+                    'caption' => $document->caption ?: $document->file_name,
+                    'size' => $document->fileSizeLabel(),
+                    'is_image' => $document->isImage(),
+                    'delete_url' => route('visits.documents.destroy', [$visit, $document])
+                ]
+            ]);
+        }
+
         return redirect()->route('visits.show', $visit)
             ->with('success', 'Foto/Dokumen kunjungan berhasil diunggah.');
     }
@@ -189,6 +203,10 @@ class VisitController extends Controller
 
         \Illuminate\Support\Facades\Storage::disk('public')->delete($document->file_path);
         $document->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('visits.show', $visit)
             ->with('success', 'Dokumen berhasil dihapus.');
