@@ -20,6 +20,11 @@ class Business extends Model
         'address',
         'business_age_months',
         'initial_capital',
+        'monthly_turnover',
+        'daily_turnover',
+        'net_monthly_income',
+        'workforce_count',
+        'start_year',
         'products_services',
         'initial_condition',
         'status',
@@ -31,6 +36,11 @@ class Business extends Model
         return [
             'initial_capital'      => 'integer',
             'business_age_months'  => 'integer',
+            'monthly_turnover'     => 'integer',
+            'daily_turnover'       => 'integer',
+            'net_monthly_income'   => 'integer',
+            'workforce_count'      => 'integer',
+            'start_year'           => 'integer',
         ];
     }
 
@@ -54,6 +64,11 @@ class Business extends Model
     public function evaluations(): HasMany
     {
         return $this->hasMany(Evaluation::class);
+    }
+
+    public function financingAnalyses(): HasMany
+    {
+        return $this->hasMany(FinancingAnalysis::class);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

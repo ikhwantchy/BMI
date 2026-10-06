@@ -14,6 +14,26 @@
             <span class="text-gray-900 font-semibold">{{ $member->full_name }}</span>
         </div>
         <div class="flex items-center gap-2">
+            @if ($member->latestFinancingAnalysis)
+                <a href="{{ route('documents.financing-analysis.show', $member->latestFinancingAnalysis->id) }}" target="_blank" class="btn-secondary text-[#009a4c] border-[#009a4c] font-semibold">
+                    Analisis Pembiayaan
+                </a>
+            @else
+                <a href="{{ route('documents.financing-analysis.create', ['member_id' => $member->id]) }}" class="btn-secondary text-xs">
+                    + Analisis Pembiayaan
+                </a>
+            @endif
+
+            @if ($member->latestFeasibilityAssessment)
+                <a href="{{ route('documents.feasibility-assessment.show', $member->latestFeasibilityAssessment->id) }}" target="_blank" class="btn-secondary text-teal-700 border-teal-700 font-semibold">
+                    Uji Kelayakan
+                </a>
+            @else
+                <a href="{{ route('documents.feasibility-assessment.create', ['member_id' => $member->id]) }}" class="btn-secondary text-xs">
+                    + Uji Kelayakan
+                </a>
+            @endif
+
             <a href="{{ route('members.history', $member) }}" class="btn-secondary">
                 <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>

@@ -17,6 +17,18 @@ class Member extends Model
     protected $fillable = [
         'member_number',
         'full_name',
+        'nik',
+        'birth_place_date',
+        'marital_status',
+        'education',
+        'rembug_pusat',
+        'registration_year',
+        'spouse_name',
+        'spouse_nik',
+        'spouse_phone',
+        'spouse_occupation',
+        'spouse_income',
+        'dependents_count',
         'address',
         'phone',
         'membership_status',
@@ -28,6 +40,9 @@ class Member extends Model
     {
         return [
             'membership_status' => MembershipStatus::class,
+            'spouse_income'     => 'integer',
+            'dependents_count'  => 'integer',
+            'registration_year' => 'integer',
         ];
     }
 
@@ -41,6 +56,26 @@ class Member extends Model
     public function businesses(): HasMany
     {
         return $this->hasMany(Business::class);
+    }
+
+    public function financingAnalyses(): HasMany
+    {
+        return $this->hasMany(FinancingAnalysis::class);
+    }
+
+    public function feasibilityAssessments(): HasMany
+    {
+        return $this->hasMany(FeasibilityAssessment::class);
+    }
+
+    public function latestFinancingAnalysis()
+    {
+        return $this->hasOne(FinancingAnalysis::class)->latestOfMany();
+    }
+
+    public function latestFeasibilityAssessment()
+    {
+        return $this->hasOne(FeasibilityAssessment::class)->latestOfMany();
     }
 
     // ─── Scopes ──────────────────────────────────────────────────────────────

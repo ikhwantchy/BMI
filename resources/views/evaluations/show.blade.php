@@ -16,12 +16,15 @@
             <span class="text-gray-500 font-mono">{{ $evaluation->visit?->evaluation_period ?? '-' }}</span>
         </div>
         <div class="flex items-center space-x-2">
-            <button onclick="window.print()" class="btn-secondary">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            <a href="{{ route('documents.business-evaluation.show', $evaluation->id) }}" target="_blank" class="btn-secondary text-[#009a4c] border-[#009a4c] font-semibold">
+                <svg class="w-4 h-4 text-[#009a4c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.5L19 7.5V19a2 2 0 01-2 2z"/>
                 </svg>
-                Cetak Lembar
-            </button>
+                Dokumen Resmi BMI
+            </a>
+            <a href="{{ route('documents.business-evaluation.pdf', $evaluation->id) }}" class="btn-secondary bg-[#009a4c] text-white hover:bg-[#007d3e] font-semibold">
+                Unduh PDF
+            </a>
             <a href="{{ route('visits.show', $evaluation->visit) }}" class="btn-secondary">
                 Ke Kunjungan
             </a>

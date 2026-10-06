@@ -76,6 +76,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/analytics', [ReportController::class, 'analytics'])->name('reports.analytics');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 
+    // ─── Dokumen Operasional Klien (Analisis Pembiayaan, Uji Kelayakan, Evaluasi) ──
+    Route::get('/documents', [\App\Http\Controllers\DocumentController::class, 'index'])->name('documents.index');
+    
+    // Analisis Pembiayaan
+    Route::get('/documents/financing-analysis/create', [\App\Http\Controllers\DocumentController::class, 'createFinancingAnalysis'])->name('documents.financing-analysis.create');
+    Route::post('/documents/financing-analysis', [\App\Http\Controllers\DocumentController::class, 'storeFinancingAnalysis'])->name('documents.financing-analysis.store');
+    Route::get('/documents/financing-analysis/{analysis}', [\App\Http\Controllers\DocumentController::class, 'showFinancingAnalysis'])->name('documents.financing-analysis.show');
+    Route::get('/documents/financing-analysis/{analysis}/pdf', [\App\Http\Controllers\DocumentController::class, 'pdfFinancingAnalysis'])->name('documents.financing-analysis.pdf');
+    
+    // Uji Kelayakan
+    Route::get('/documents/feasibility-assessment/create', [\App\Http\Controllers\DocumentController::class, 'createFeasibilityAssessment'])->name('documents.feasibility-assessment.create');
+    Route::post('/documents/feasibility-assessment', [\App\Http\Controllers\DocumentController::class, 'storeFeasibilityAssessment'])->name('documents.feasibility-assessment.store');
+    Route::get('/documents/feasibility-assessment/{assessment}', [\App\Http\Controllers\DocumentController::class, 'showFeasibilityAssessment'])->name('documents.feasibility-assessment.show');
+    Route::get('/documents/feasibility-assessment/{assessment}/pdf', [\App\Http\Controllers\DocumentController::class, 'pdfFeasibilityAssessment'])->name('documents.feasibility-assessment.pdf');
+    
+    // Evaluasi Usaha
+    Route::get('/documents/business-evaluation/{evaluation}', [\App\Http\Controllers\DocumentController::class, 'showBusinessEvaluation'])->name('documents.business-evaluation.show');
+    Route::get('/documents/business-evaluation/{evaluation}/pdf', [\App\Http\Controllers\DocumentController::class, 'pdfBusinessEvaluation'])->name('documents.business-evaluation.pdf');
+
     // Audit Trail & Keamanan
     Route::get('/audit', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit.index');
     Route::get('/audit/export', [\App\Http\Controllers\AuditLogController::class, 'export'])->name('audit.export');
