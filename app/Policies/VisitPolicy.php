@@ -27,12 +27,22 @@ class VisitPolicy
 
     public function create(User $user): bool
     {
-        return $this->checkPermission($user, 'visits.create', ['manajer', 'asisten_manajer', 'pengurus', 'system_admin']);
+        return $this->checkPermission($user, 'visits.create', ['petugas_lapangan', 'manajer', 'asisten_manajer', 'pengurus', 'system_admin']);
     }
 
     public function update(User $user, Visit $visit): bool
     {
-        return $this->checkPermission($user, 'visits.update', ['petugas_lapangan', 'system_admin']);
+        // Manajer dan Asisten Manajer dapat memperbarui jadwal & instruksi kunjungan
+        if (in_array($user->role, ['manajer', 'asisten_manajer', 'system_admin'])) {
+            return true;
+        }
+
+        // Petugas Lapangan hanya dapat memperbarui/mengisi kunjungan miliknya
+        if ($user->role === 'petugas_lapangan') {
+            return $visit->officer_id === $user->id;
+        }
+
+        return $this->checkPermission($user, 'visits.update', ['petugas_lapangan', 'manajer', 'asisten_manajer', 'system_admin']);
     }
 
     public function delete(User $user, Visit $visit): bool

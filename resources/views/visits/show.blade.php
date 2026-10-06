@@ -5,7 +5,7 @@
 
 @section('content')
 
-@if(auth()->user()->hasRole('petugas_lapangan') && in_array($visit->status->value, ['scheduled', 'in_progress']))
+@if((auth()->user()->isOfficer() || auth()->user()->hasRole('petugas_lapangan')) && in_array($visit->status->value, ['scheduled', 'in_progress', 'needs_revision']))
     @include('visits.execute-form')
 @else
 

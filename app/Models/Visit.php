@@ -22,6 +22,13 @@ class Visit extends Model
         'evaluation_period',
         'status',
         'field_notes',
+        'business_condition',
+        'business_activity',
+        'revenue_trend',
+        'business_obstacles',
+        'field_findings',
+        'action_plan',
+        'improvement_target',
         'branch_id',
     ];
 
@@ -31,6 +38,11 @@ class Visit extends Model
             'visit_date' => 'date',
             'status'     => VisitStatus::class,
         ];
+    }
+
+    public function isEditable(): bool
+    {
+        return $this->status ? $this->status->isEditable() : true;
     }
 
     // ─── Relationships ───────────────────────────────────────────────────────

@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     // Visits
     Route::resource('visits', VisitController::class)->except(['destroy']);
     Route::post('/visits/{visit}/complete', [VisitController::class, 'complete'])->name('visits.complete');
+    Route::post('/visits/{visit}/save-draft', [VisitController::class, 'saveDraft'])->name('visits.save_draft');
     Route::post('/visits/{visit}/submit-execution', [VisitController::class, 'submitExecution'])->name('visits.submit_execution');
     Route::post('/visits/{visit}/documents', [VisitController::class, 'uploadDocument'])->name('visits.documents.store');
     Route::delete('/visits/{visit}/documents/{document}', [VisitController::class, 'deleteDocument'])->name('visits.documents.destroy');

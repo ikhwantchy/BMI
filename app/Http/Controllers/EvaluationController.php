@@ -140,9 +140,13 @@ class EvaluationController extends Controller
             'validator_notes'  => $request->validator_notes,
         ]);
 
+        if ($evaluation->visit) {
+            $evaluation->visit->update(['status' => VisitStatus::Completed]);
+        }
+
         $this->auditService->logValidate($evaluation);
 
-        return back()->with('success', 'Evaluasi berhasil divalidasi.');
+        return back()->with('success', 'Evaluasi berhasil divalidasi dan kunjungan ditandai selesai.');
     }
 
     public function reject(Request $request, Evaluation $evaluation)
@@ -157,6 +161,10 @@ class EvaluationController extends Controller
             'validated_at'    => now(),
             'validator_notes' => $request->validator_notes,
         ]);
+
+        if ($evaluation->visit) {
+            $evaluation->visit->update(['status' => VisitStatus::Cancelled]);
+        }
 
         $this->auditService->logReject($evaluation, $request->validator_notes);
 
@@ -178,6 +186,10 @@ class EvaluationController extends Controller
             'validated_at'    => now(),
             'validator_notes' => $request->validator_notes,
         ]);
+
+        if ($evaluation->visit) {
+            $evaluation->visit->update(['status' => VisitStatus::NeedsRevision]);
+        }
 
         $this->auditService->logRevise($evaluation, $request->validator_notes);
 

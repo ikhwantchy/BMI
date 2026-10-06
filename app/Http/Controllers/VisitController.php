@@ -101,35 +101,109 @@ class VisitController extends Controller
             ->with('success', 'Data kunjungan berhasil diperbarui.');
     }
 
+    public function saveDraft(Request $request, Visit $visit)
+    {
+        $this->authorize('update', $visit);
+
+        abort_unless($visit->isEditable(), 403, 'Kunjungan dengan status ini tidak dapat diubah.');
+
+        DB::transaction(function () use ($request, $visit) {
+            $visit->update([
+                'business_condition' => $request->business_condition,
+                'business_activity'  => $request->business_activity,
+                'revenue_trend'      => $request->revenue_trend,
+                'business_obstacles' => $request->business_obstacles,
+                'field_findings'     => $request->field_findings,
+                'field_notes'        => $request->field_notes ?? $request->field_findings,
+                'action_plan'        => $request->action_plan,
+                'improvement_target' => $request->improvement_target,
+                'status'             => VisitStatus::InProgress->value,
+            ]);
+
+            $evaluation = $visit->evaluation()->firstOrCreate([
+                'business_id' => $visit->business_id,
+                'branch_id'   => auth()->user()->branch_id ?? 1,
+            ]);
+
+            $evaluation->update([
+                'status'                => \App\Enums\EvaluationStatus::Draft->value,
+                'recommendation'        => $request->recommendation ?: $evaluation->recommendation,
+                'recommendation_reason' => $request->recommendation_reason ?: $evaluation->recommendation_reason,
+                'submitted_by'          => auth()->id(),
+            ]);
+
+            if ($request->has('scores') && is_array($request->scores)) {
+                foreach ($request->scores as $parameterId => $score) {
+                    if ($score !== null && $score !== '') {
+                        \App\Models\EvaluationDetail::updateOrCreate(
+                            ['evaluation_id' => $evaluation->id, 'parameter_id' => $parameterId],
+                            ['score' => $score, 'notes' => $request->notes[$parameterId] ?? null]
+                        );
+                    }
+                }
+                app(\App\Services\ScoringService::class)->applyScore($evaluation);
+            }
+        });
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success'      => true,
+                'message'      => 'Draft kunjungan berhasil disimpan.',
+                'status'       => VisitStatus::InProgress->value,
+                'status_label' => VisitStatus::InProgress->label(),
+            ]);
+        }
+
+        return redirect()->route('visits.show', $visit)
+            ->with('success', 'Draft kemajuan kunjungan berhasil disimpan.');
+    }
+
     public function submitExecution(Request $request, Visit $visit)
     {
         $this->authorize("update", $visit);
+
+        abort_unless($visit->isEditable(), 403, 'Kunjungan ini tidak dapat disubmit.');
+
         $request->validate([
-            "field_notes" => "nullable|string|max:2000",
-            "scores" => "required|array",
-            "scores.*" => "required|numeric|min:0|max:100",
-            "notes.*" => "nullable|string|max:500",
-            "recommendation" => "required|string|in:recommended,continued_coaching,not_recommended",
+            "business_condition"    => "required|string",
+            "business_activity"     => "required|string",
+            "revenue_trend"         => "required|string",
+            "business_obstacles"    => "required|string",
+            "field_findings"        => "nullable|string",
+            "field_notes"           => "nullable|string",
+            "scores"                => "required|array",
+            "scores.*"              => "required|numeric|min:0|max:100",
+            "notes.*"               => "nullable|string|max:500",
+            "recommendation"        => "required|string|in:recommended,continued_coaching,not_recommended",
             "recommendation_reason" => "nullable|string",
+            "action_plan"           => "nullable|string",
+            "improvement_target"    => "nullable|string",
         ]);
 
         DB::transaction(function () use ($request, $visit) {
             $visit->update([
-                "field_notes" => $request->field_notes,
-                "status" => \App\Enums\VisitStatus::Completed->value,
+                "business_condition" => $request->business_condition,
+                "business_activity"  => $request->business_activity,
+                "revenue_trend"      => $request->revenue_trend,
+                "business_obstacles" => $request->business_obstacles,
+                "field_findings"     => $request->field_findings,
+                "field_notes"        => $request->field_notes ?? $request->field_findings,
+                "action_plan"        => $request->action_plan,
+                "improvement_target" => $request->improvement_target,
+                "status"             => VisitStatus::WaitingValidation->value,
             ]);
 
             $evaluation = $visit->evaluation()->firstOrCreate([
                 "business_id" => $visit->business_id,
-                "branch_id" => auth()->user()->branch_id ?? 1,
+                "branch_id"   => auth()->user()->branch_id ?? 1,
             ]);
 
             $evaluation->update([
-                "status" => \App\Enums\EvaluationStatus::WaitingValidation->value,
-                "recommendation" => $request->recommendation,
+                "status"                => \App\Enums\EvaluationStatus::WaitingValidation->value,
+                "recommendation"        => $request->recommendation,
                 "recommendation_reason" => $request->recommendation_reason,
-                "submitted_by" => auth()->id(),
-                "submitted_at" => now(),
+                "submitted_by"          => auth()->id(),
+                "submitted_at"          => now(),
             ]);
 
             foreach ($request->scores as $parameterId => $score) {
@@ -141,7 +215,9 @@ class VisitController extends Controller
             app(\App\Services\ScoringService::class)->applyScore($evaluation);
         });
 
-        return redirect()->route("visits.show", $visit)->with("success", "Kunjungan berhasil diselesaikan dan menunggu validasi.");
+        $this->auditService->logSubmit($visit, 'Hasil kunjungan dan evaluasi diajukan untuk validasi manajer.');
+
+        return redirect()->route("visits.show", $visit)->with("success", "Kunjungan berhasil diselesaikan dan menunggu validasi manajer.");
     }
 
     public function complete(Request $request, Visit $visit)
