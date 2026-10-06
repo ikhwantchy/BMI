@@ -87,7 +87,7 @@
                     <button type="submit"
                             id="login-btn"
                             class="w-full py-2.5 px-4 bg-[#009a4c] hover:bg-[#007d3e] text-white text-xs font-semibold uppercase tracking-wider transition-colors focus:outline-none focus:ring-1 focus:ring-[#009a4c] cursor-pointer">
-                        Masuk Sistem
+                        Login
                     </button>
                 </div>
             </form>
@@ -96,7 +96,7 @@
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
         <p class="text-center text-xs text-gray-400 mt-6 tracking-wide">
-            &copy; {{ date('Y') }} Koperasi Syariah BMI &bull; Solusi Pemberdayaan Umat
+            &copy; {{ date('Y') }} Koperasi Syariah BMI &bull; Melayani dengan Hati Nurani
         </p>
     </div>
 </div>
