@@ -31,6 +31,24 @@
                 <span class="w-2 h-2 bg-[#009a4c]"></span>
             </div>
 
+            @if (session('warning'))
+                <div class="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
+                    <svg class="w-4 h-4 flex-shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span>{{ session('warning') }}</span>
+                </div>
+            @endif
+
+            @if (session('status'))
+                <div class="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                    <svg class="w-4 h-4 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>{{ session('status') }}</span>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login') }}" id="login-form" class="space-y-4">
                 @csrf
 
@@ -94,6 +112,14 @@
         </div>
 
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        <script>
+            // Segarkan halaman jika dibuka kembali dari cache browser / riwayat (bfcache)
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+        </script>
 
         <p class="text-center text-xs text-gray-400 mt-6 tracking-wide">
             &copy; {{ date('Y') }} Koperasi Syariah BMI &bull; Melayani dengan Hati Nurani
